@@ -80,6 +80,9 @@ DATABASES = {
         'PASSWORD': config('DB_PASSWORD', '12345678'),
         'HOST': config('DB_HOST', '127.0.0.1'),
         'PORT': config('DB_PORT', '3306'),
+        'OPTIONS': {
+            'ssl': {'ssl_mode': 'REQUIRED'}
+        }
     }
 }
 
