@@ -1,0 +1,471 @@
+{% extends base_template|default:"base.html" %}
+
+{% block title %}Dərslər | TəlimQeyd{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <nav aria-label="breadcrumb" class="mb-2">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Ana səhifə</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Dərslər</li>
+        </ol>
+    </nav>
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
+        <div>
+            <h1>Dərslər</h1>
+            <p>{% if is_admin %}Bütün siniflərdəki dərsləri və davamiyyəti idarə edin.{% elif is_teacher %}Sizin siniflərinizdəki dərsləri idarə edin.{% else %}Qeydiyyatdan keçdiyiniz siniflərdəki dərsləri baxın.{% endif %}</p>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+            {% if carousel_reklamlar %}
+            <div class="header-ad-widget" aria-label="Reklamlar">
+                <span class="header-ad-widget-icon" title="Reklamlar">
+                    <i class="bi bi-megaphone-fill"></i>
+                </span>
+                <div class="header-ad-divider"></div>
+                {% for reklam in carousel_reklamlar %}
+                <a href="{% url 'core:reklam_detail' reklam.pk %}" class="header-ad-fragment" title="{{ reklam.ad }} {{ reklam.soyad }} - {{ reklam.ixtisas_fenni }}">
+                    <img src="{{ reklam.sekil_url }}" alt="{{ reklam.ad }} {{ reklam.soyad }}" class="header-ad-avatar"
+                         onerror="this.src='https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=professional%20teacher%20portrait%20azerbaijan%20education&image_size=square'">
+                    <div class="header-ad-info">
+                        <p class="header-ad-name">{{ reklam.ad }} {{ reklam.soyad }}</p>
+                        <span class="header-ad-ixtisas">{{ reklam.ixtisas_fenni }}</span>
+                    </div>
+                    <span class="header-ad-badge-pulse"></span>
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% if is_teacher %}
+            <a href="{% url 'core:lesson_create' %}" class="btn btn-primary">
+                <i class="bi bi-calendar-plus-fill me-2"></i>Yeni dərs
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if is_teacher or is_admin or is_course_admin %}
+<div class="alert alert-info d-flex align-items-start gap-3 mb-4" role="alert">
+    <i class="bi bi-info-circle-fill fs-5 mt-1 flex-shrink-0"></i>
+    <div>
+        <strong>Google Meet tövsiyəsi:</strong>
+        Dərslərin onlayn keçirilməsi üçün öz profilinizdəki link hissəsinə sabit "Google Meet" görüş linki yerləşdirməyiniz tövsiyə olunur.
+    </div>
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-body p-3 p-sm-4">
+        <form method="get" class="mb-4">
+            <div class="d-flex flex-column flex-sm-row gap-3">
+                <select name="class" class="form-select w-100 w-sm-auto flex-grow-1">
+                    <option value="">Bütün siniflər</option>
+                    {% for cls in class_options %}
+                    <option value="{{ cls.pk }}" {% if class_filter == cls.pk|stringformat:"s" %}selected{% endif %}>{{ cls.name }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-outline-secondary w-100 w-sm-auto">Filtrlə</button>
+                {% if class_filter %}
+                <a href="{% url 'core:lesson_list' %}" class="btn btn-link text-decoration-none w-100 w-sm-auto">Təmizlə</a>
+                {% endif %}
+            </div>
+        </form>
+
+        {% if lessons %}
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Tarix</th>
+                        <th>Sinif</th>
+                        {% if is_admin or is_student %}<th class="d-none d-sm-table-cell">Müəllim</th>{% endif %}
+                        <th>Mövzu</th>
+                        <th class="d-none d-sm-table-cell">Vaxt</th>
+                        <th>Status</th>
+                        {% if is_student %}<th>Canlı</th>{% endif %}
+                        {% if is_teacher %}<th>Əməllər</th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lesson in lessons %}
+                    <tr>
+                        <td data-label="Tarix">
+                            <span class="fw-semibold">{{ lesson.date|date:"d.m.Y" }}</span>
+                        </td>
+                        <td data-label="Sinif">
+                            <a href="{% url 'core:class_detail' lesson.class_assigned.pk %}" class="text-decoration-none">
+                                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">
+                                    <i class="bi bi-mortarboard me-1"></i>{{ lesson.class_assigned.name }}
+                                </span>
+                            </a>
+                        </td>
+                        {% if is_admin or is_student %}
+                        <td data-label="Müəllim" class="d-none d-sm-table-cell">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="avatar" style="width: 1.75rem; height: 1.75rem; font-size: 0.7rem;">{{ lesson.class_assigned.teacher.get_full_name|default:lesson.class_assigned.teacher.username|slice:":1"|upper }}</span>
+                                <small>{{ lesson.class_assigned.teacher.get_full_name|default:lesson.class_assigned.teacher.username }}</small>
+                            </div>
+                        </td>
+                        {% endif %}
+                        <td data-label="Mövzu">
+                            <div class="fw-medium">{{ lesson.title_topic }}</div>
+                        </td>
+                        <td data-label="Vaxt" class="d-none d-sm-table-cell">
+                            <span class="text-muted">{{ lesson.start_time|date:"H:i" }} - {{ lesson.end_time|date:"H:i" }}</span>
+                        </td>
+                        <td data-label="Status">
+                            {% if is_student %}
+                                {% if lesson.personal_is_grade %}
+                                <span class="badge bg-primary text-white rounded-pill px-3 py-1 fs-6 fw-bold shadow-sm">{{ lesson.personal_status_label }}</span>
+                                {% elif lesson.personal_status_label and lesson.personal_status_label != '--------' %}
+                                <span class="fw-semibold">{{ lesson.personal_status_label }}</span>
+                                {% else %}
+                                <span class="text-muted">--------</span>
+                                {% endif %}
+                            {% else %}
+                                {% if lesson.is_expired %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-1">
+                                    <i class="bi bi-x-circle-fill me-1"></i>Bitib
+                                </span>
+                                {% elif lesson.is_active %}
+                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1">
+                                    <i class="bi bi-broadcast-pin me-1"></i>Canlı
+                                </span>
+                                {% else %}
+                                <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 py-1">
+                                    <i class="bi bi-hourglass-split me-1"></i>Gözləmədə
+                                </span>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                        {% if is_student %}
+                        <td data-label="Canlı" class="student-join-cell" data-lesson-id="{{ lesson.pk }}" data-started-at="{% if lesson.started_at %}{{ lesson.started_at|date:'c' }}{% endif %}" data-lesson-link="{{ lesson.lesson_link|default:'' }}" data-is-active="{{ lesson.is_active|yesno:'1,0' }}" data-is-expired="{{ lesson.is_expired|yesno:'1,0' }}">
+                            {% if lesson.is_expired %}
+                                <button type="button" class="btn btn-outline-secondary btn-sm" disabled data-bs-toggle="tooltip" title="Dərsin vaxtı bitib">
+                                    <i class="bi bi-door-closed me-1"></i> Dərs bitib
+                                </button>
+                            {% elif not lesson.is_active or not lesson.lesson_link %}
+                                <button type="button" class="btn btn-outline-secondary btn-sm student-join-btn" disabled data-bs-toggle="tooltip" title="{% if not lesson.lesson_link %}Dərs linki hələ təyin edilməyib.{% else %}Müəllim dərsi hələ başlamayıb.{% endif %}">
+                                    <i class="bi bi-hourglass-split me-1"></i> Dərsə daxil ol
+                                </button>
+                            {% elif lesson.student_delay_seconds > 0 %}
+                                <button type="button" class="btn btn-outline-warning btn-sm student-countdown-btn" disabled data-bs-toggle="tooltip" title="Müəllim dərsi başlatdı. 30 saniyə gözləyin..." data-remaining="{{ lesson.student_delay_seconds }}">
+                                    <i class="bi bi-stopwatch me-1"></i> <span class="countdown-text">{{ lesson.student_delay_seconds }}s</span>
+                                </button>
+                            {% else %}
+                                <a href="{{ lesson.lesson_link }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm student-join-active">
+                                    <i class="bi bi-door-open me-1"></i> Dərsə daxil ol
+                                </a>
+                            {% endif %}
+                        </td>
+                        {% endif %}
+                        {% if is_teacher %}
+                        <td data-label="Əməllər">
+                            <div class="d-flex gap-2 justify-content-start justify-content-sm-end flex-wrap align-items-center">
+                                {% if not lesson.is_expired and not lesson.is_active %}
+                                    {% if lesson.lesson_link %}
+                                    <form method="post" action="{% url 'core:lesson_activate' lesson.pk %}" class="d-inline m-0 start-lesson-list-form" data-lesson-id="{{ lesson.pk }}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="ajax" value="1">
+                                        <button type="submit" class="btn btn-primary btn-sm start-lesson-list-btn" data-lesson-id="{{ lesson.pk }}">
+                                            <i class="bi bi-play-circle-fill me-1"></i> Başlat
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" disabled data-bs-toggle="tooltip" title="Dərs linki təyin edilməyib. Zəhmət olmasa profilinizdə linki əlavə edin.">
+                                        <i class="bi bi-play-circle-fill me-1"></i> Başlat
+                                    </button>
+                                    {% endif %}
+                                {% elif lesson.is_active and not lesson.is_expired %}
+                                    {% if lesson.lesson_link %}
+                                    <a href="{{ lesson.lesson_link }}" target="_blank" rel="noopener noreferrer" class="btn btn-success btn-sm">
+                                        <i class="bi bi-box-arrow-up-right me-1"></i> Aç
+                                    </a>
+                                    {% endif %}
+                                    <form method="post" action="{% url 'core:lesson_deactivate' lesson.pk %}" class="d-inline m-0 stop-lesson-list-form" data-lesson-id="{{ lesson.pk }}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="ajax" value="1">
+                                        <button type="submit" class="btn btn-danger btn-sm stop-lesson-list-btn" data-lesson-id="{{ lesson.pk }}">
+                                            <i class="bi bi-stop-circle-fill me-1"></i> Dərsi bitir
+                                        </button>
+                                    </form>
+                                {% endif %}
+                                <a href="{% url 'core:lesson_detail' lesson.pk %}" class="btn btn-outline-info btn-sm action-btn" data-bs-toggle="tooltip" title="Bax">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'core:lesson_attendance' lesson.pk %}" class="btn btn-outline-success btn-sm" data-bs-toggle="tooltip" title="Davamiyyət">
+                                    <i class="bi bi-check2-square me-1 d-sm-none"></i><span class="d-none d-sm-inline">Davamiyyət</span>
+                                </a>
+                                <a href="{% url 'core:lesson_update' lesson.pk %}" class="btn btn-outline-secondary btn-sm action-btn" data-bs-toggle="tooltip" title="Məlumatı yenilə">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </a>
+                                <a href="{% url 'core:lesson_delete' lesson.pk %}" class="btn btn-outline-danger btn-sm action-btn" data-bs-toggle="tooltip" title="Sil">
+                                    <i class="bi bi-trash-fill"></i>
+                                </a>
+                            </div>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Səhifə naviqasiyası" class="mt-4">
+            <ul class="pagination justify-content-center flex-wrap mb-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page=1" aria-label="Birinci">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}" aria-label="Əvvəlki">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link" aria-label="Birinci"><i class="bi bi-chevron-double-left"></i></span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link" aria-label="Əvvəlki"><i class="bi bi-chevron-left"></i></span>
+                </li>
+                {% endif %}
+
+                {% for i in page_obj.paginator.page_range %}
+                    {% if page_obj.number == i %}
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link">{{ i }}</span>
+                    </li>
+                    {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ i }}">{{ i }}</a>
+                    </li>
+                    {% elif i == 1 or i == page_obj.paginator.num_pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ i }}">{{ i }}</a>
+                    </li>
+                    {% elif i == page_obj.number|add:'-3' or i == page_obj.number|add:'3' %}
+                    <li class="page-item disabled">
+                        <span class="page-link">…</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}" aria-label="Növbəti">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.paginator.num_pages }}" aria-label="Sonuncu">
+                        <i class="bi bi-chevron-double-right"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link" aria-label="Növbəti"><i class="bi bi-chevron-right"></i></span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link" aria-label="Sonuncu"><i class="bi bi-chevron-double-right"></i></span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-calendar-x"></i>
+            <h3>Dərs tapılmadı</h3>
+            <p>{% if class_filter %}Seçilmiş sinif üçün hələ dərs yoxdur.{% else %}İlk dərsi əlavə etməklə başlayın.{% endif %}</p>
+            {% if is_teacher %}
+            <a href="{% url 'core:lesson_create' %}" class="btn btn-primary mt-3">
+                <i class="bi bi-calendar-plus-fill me-1"></i>İlk dərs əlavə edin
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if is_teacher %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var lessonLinkMap = {};
+    {% for lesson in lessons %}
+        {% if not lesson.is_expired and not lesson.is_active and lesson.lesson_link %}
+        lessonLinkMap[{{ lesson.pk }}] = "{{ lesson.lesson_link|escapejs }}";
+        {% endif %}
+    {% endfor %}
+
+    var startForms = document.querySelectorAll('.start-lesson-list-form');
+    startForms.forEach(function (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var lessonId = form.getAttribute('data-lesson-id');
+            var btn = form.querySelector('.start-lesson-list-btn');
+            if (!btn || btn.disabled) return;
+
+            btn.disabled = true;
+            var originalHtml = btn.innerHTML;
+            var originalClass = btn.className;
+            btn.innerHTML = '<i class="bi bi-hourglass-split me-1 spinner-border spinner-border-sm"></i>...';
+
+            var formData = new FormData(form);
+            var csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }).then(function (resp) {
+                return resp.json();
+            }).then(function (data) {
+                if (data.success) {
+                    btn.className = 'btn btn-success btn-sm';
+                    btn.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>Başladıldı';
+                    setTimeout(function () {
+                        if (data.lesson_link) {
+                            window.open(data.lesson_link, '_blank', 'noopener,noreferrer');
+                        }
+                        location.reload();
+                    }, 500);
+                } else {
+                    btn.disabled = false;
+                    btn.className = originalClass;
+                    btn.innerHTML = originalHtml;
+                    alert(data.message || 'Xəta baş verdi.');
+                }
+            }).catch(function (err) {
+                console.error(err);
+                btn.disabled = false;
+                btn.className = originalClass;
+                btn.innerHTML = originalHtml;
+                alert('Xəta baş verdi.');
+            });
+        });
+    });
+
+    var stopForms = document.querySelectorAll('.stop-lesson-list-form');
+    stopForms.forEach(function (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var lessonId = form.getAttribute('data-lesson-id');
+            var btn = form.querySelector('.stop-lesson-list-btn');
+            if (!btn || btn.disabled) return;
+
+            if (!confirm('Dərsi bitirmək istədiyinizə əminsiniz? Şagirdlərin girişi bağlanacaq.')) {
+                return;
+            }
+
+            btn.disabled = true;
+            var originalHtml = btn.innerHTML;
+            var originalClass = btn.className;
+            btn.innerHTML = '<i class="bi bi-hourglass-split me-1 spinner-border spinner-border-sm"></i>...';
+
+            var formData = new FormData(form);
+            var csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }).then(function (resp) {
+                return resp.json();
+            }).then(function (data) {
+                if (data.success) {
+                    btn.className = 'btn btn-outline-secondary btn-sm';
+                    btn.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>Bitirildi';
+                    setTimeout(function () {
+                        location.reload();
+                    }, 500);
+                } else {
+                    btn.disabled = false;
+                    btn.className = originalClass;
+                    btn.innerHTML = originalHtml;
+                    alert(data.message || 'Xəta baş verdi.');
+                }
+            }).catch(function (err) {
+                console.error(err);
+                btn.disabled = false;
+                btn.className = originalClass;
+                btn.innerHTML = originalHtml;
+                alert('Xəta baş verdi.');
+            });
+        });
+    });
+});
+</script>
+{% endif %}
+
+{% if is_student %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var cells = document.querySelectorAll('.student-join-cell');
+
+    function parseIsoDate(s) {
+        if (!s) return null;
+        try {
+            var d = new Date(s);
+            if (isNaN(d.getTime())) return null;
+            return d;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function renderCellState(cell) {
+        var lessonId = cell.getAttribute('data-lesson-id');
+        var startedAtStr = cell.getAttribute('data-started-at');
+        var lessonLink = cell.getAttribute('data-lesson-link');
+        var isActive = cell.getAttribute('data-is-active') === '1';
+        var isExpired = cell.getAttribute('data-is-expired') === '1';
+        var startedAt = parseIsoDate(startedAtStr);
+
+        if (isExpired) {
+            cell.innerHTML = '<button type="button" class="btn btn-outline-secondary btn-sm" disabled title="Dərsin vaxtı bitib"><i class="bi bi-door-closed me-1"></i> Dərs bitib</button>';
+            return;
+        }
+        if (!isActive || !lessonLink) {
+            var title = !lessonLink ? 'Dərs linki hələ təyin edilməyib.' : 'Müəllim dərsi hələ başlamayıb.';
+            cell.innerHTML = '<button type="button" class="btn btn-outline-secondary btn-sm" disabled title="' + title + '"><i class="bi bi-hourglass-split me-1"></i> Dərsə daxil ol</button>';
+            return;
+        }
+        var now = new Date();
+        var delayMs = 30 * 1000;
+        var eligibleAt = startedAt ? new Date(startedAt.getTime() + delayMs) : null;
+        var remaining = eligibleAt ? Math.max(0, Math.ceil((eligibleAt - now) / 1000)) : 0;
+
+        if (remaining > 0) {
+            cell.innerHTML = '<button type="button" class="btn btn-outline-warning btn-sm student-countdown-btn" disabled title="Müəllim dərsi başlatdı. 30 saniyə gözləyin..." data-remaining="' + remaining + '"><i class="bi bi-stopwatch me-1"></i> <span class="countdown-text">' + remaining + 's</span></button>';
+        } else {
+            cell.innerHTML = '<a href="' + lessonLink + '" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm"><i class="bi bi-door-open me-1"></i> Dərsə daxil ol</a>';
+        }
+    }
+
+    cells.forEach(function (c) { renderCellState(c); });
+
+    setInterval(function () {
+        var anyActive = false;
+        cells.forEach(function (c) {
+            var isActive = c.getAttribute('data-is-active') === '1';
+            var isExpired = c.getAttribute('data-is-expired') === '1';
+            var startedAtStr = c.getAttribute('data-started-at');
+            if (isActive && !isExpired && startedAtStr) {
+                anyActive = true;
+                renderCellState(c);
+            }
+        });
+    }, 1000);
+});
+</script>
+{% endif %}
+{% endblock %}

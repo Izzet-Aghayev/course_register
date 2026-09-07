@@ -1,0 +1,910 @@
+{% extends base_template|default:"base.html" %}
+{% block title %}Ana Səhifə - TəlimQeyd{% endblock %}
+{% block content %}
+
+<style>
+    .hero-section {
+        position: relative;
+        overflow: hidden;
+        padding: 4rem 0 5rem;
+        border-radius: var(--neu-radius);
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 45%, #0ea5e9 100%);
+        box-shadow:
+            0 20px 50px -15px rgba(30, 58, 138, 0.35),
+            0 0 0 1px rgba(59, 130, 246, 0.2);
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 600px;
+        height: 600px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .hero-section::after {
+        content: '';
+        position: absolute;
+        bottom: -40%;
+        left: -15%;
+        width: 500px;
+        height: 500px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(14, 165, 233, 0.25) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .hero-inner {
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-title {
+        font-size: clamp(2rem, 5vw, 3.25rem);
+        font-weight: 900;
+        line-height: 1.1;
+        letter-spacing: -0.04em;
+        color: #ffffff;
+        margin-bottom: 1.25rem;
+    }
+
+    .hero-subtitle {
+        font-size: clamp(1rem, 2vw, 1.2rem);
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.88);
+        max-width: 620px;
+        margin-bottom: 2rem;
+    }
+
+    .hero-cta-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.85rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .hero-btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.95rem 1.8rem;
+        font-weight: 700;
+        border-radius: 0.875rem;
+        background: #ffffff;
+        color: var(--primary);
+        border: 1px solid rgba(255,255,255,0.5);
+        box-shadow:
+            0 8px 24px -6px rgba(0, 0, 0, 0.2),
+            inset 0 1px 0 rgba(255,255,255,0.9);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        text-decoration: none;
+    }
+
+    .hero-btn-primary:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow:
+            0 14px 32px -8px rgba(0, 0, 0, 0.28),
+            inset 0 1px 0 rgba(255,255,255,1);
+        color: var(--primary-dark);
+    }
+
+    .hero-btn-outline {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.95rem 1.8rem;
+        font-weight: 700;
+        border-radius: 0.875rem;
+        background: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+        border: 1.5px solid rgba(255,255,255,0.35);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .hero-btn-outline:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255,255,255,0.6);
+        transform: translateY(-2px);
+        color: #ffffff;
+    }
+
+    .hero-badge-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+    }
+
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.5rem 0.95rem;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255,255,255,0.22);
+        color: #ffffff;
+        font-size: 0.875rem;
+        font-weight: 600;
+        backdrop-filter: blur(4px);
+    }
+
+    .hero-icon-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    @media (min-width: 992px) {
+        .hero-icon-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    .hero-icon-card {
+        padding: 1.1rem;
+        border-radius: 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255,255,255,0.2);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .hero-icon-card:hover {
+        transform: translateY(-3px);
+        background: rgba(255, 255, 255, 0.16);
+    }
+
+    .hero-icon-card .hero-card-icon {
+        width: 42px;
+        height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.75rem;
+        background: rgba(255,255,255,0.18);
+        color: #ffffff;
+        font-size: 1.25rem;
+        margin-bottom: 0.6rem;
+    }
+
+    .hero-icon-card h6 {
+        color: #ffffff;
+        font-size: 0.95rem;
+        font-weight: 800;
+        margin-bottom: 0.2rem;
+    }
+
+    .hero-icon-card p {
+        color: rgba(255,255,255,0.8);
+        font-size: 0.8rem;
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    .stats-section {
+        margin-top: -2.5rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .landing-stat-card {
+        position: relative;
+        padding: 1.5rem;
+        border-radius: 1.1rem;
+        color: #ffffff;
+        overflow: hidden;
+        box-shadow:
+            0 12px 32px -10px rgba(15, 23, 42, 0.18),
+            inset 0 1px 0 rgba(255,255,255,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .landing-stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow:
+            0 20px 42px -10px rgba(15, 23, 42, 0.25),
+            inset 0 1px 0 rgba(255,255,255,0.22);
+    }
+
+    .landing-stat-card.primary {
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #3b82f6 100%);
+    }
+
+    .landing-stat-card.success {
+        background: linear-gradient(135deg, #059669 0%, #10b981 55%, #34d399 100%);
+    }
+
+    .landing-stat-card.warning {
+        background: linear-gradient(135deg, #ea580c 0%, #f97316 55%, #fb923c 100%);
+    }
+
+    .landing-stat-card.info {
+        background: linear-gradient(135deg, #0369a1 0%, #0ea5e9 55%, #38bdf8 100%);
+    }
+
+    .landing-stat-card .stat-icon-wrap {
+        width: 52px;
+        height: 52px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.9rem;
+        background: rgba(255,255,255,0.18);
+        color: #ffffff;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .landing-stat-card .stat-number {
+        font-size: 2.1rem;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        color: #ffffff;
+        line-height: 1;
+        margin-bottom: 0.35rem;
+    }
+
+    .landing-stat-card .stat-label {
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: rgba(255,255,255,0.92);
+        letter-spacing: 0.01em;
+    }
+
+    .section-title-row {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .section-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.4rem 0.9rem;
+        border-radius: 9999px;
+        background: #eff6ff;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        color: #1e3a8a;
+        font-size: 0.8rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+    }
+
+    .section-title {
+        font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        color: var(--bg-dark);
+        margin-bottom: 0.6rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.02rem;
+        color: #475569;
+        max-width: 620px;
+        line-height: 1.6;
+    }
+
+    .features-section {
+        padding: 4rem 0 2rem;
+    }
+
+    .feature-card {
+        height: 100%;
+        padding: 2rem 1.75rem;
+        border-radius: var(--neu-radius);
+        background: var(--glass-bg);
+        backdrop-filter: saturate(180%) blur(8px);
+        -webkit-backdrop-filter: saturate(180%) blur(8px);
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--shadow-3d);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-6px);
+        box-shadow:
+            0 0 0 1px rgba(59, 130, 246, 0.15),
+            0 20px 40px -14px rgba(30, 58, 138, 0.18);
+    }
+
+    .feature-card .feature-icon {
+        width: 60px;
+        height: 60px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 1rem;
+        color: #ffffff;
+        font-size: 1.6rem;
+        margin-bottom: 1.2rem;
+        box-shadow:
+            0 8px 18px -6px rgba(15, 23, 42, 0.2),
+            inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+
+    .feature-card.admin .feature-icon { background: linear-gradient(135deg, #6d28d9, #8b5cf6); }
+    .feature-card.teacher .feature-icon { background: linear-gradient(135deg, #1e3a8a, #3b82f6); }
+    .feature-card.student .feature-icon { background: linear-gradient(135deg, #059669, #10b981); }
+    .feature-card.ads .feature-icon { background: linear-gradient(135deg, #ea580c, #f97316); }
+
+    .feature-card h4 {
+        font-size: 1.2rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--bg-dark);
+        margin-bottom: 0.65rem;
+    }
+
+    .feature-card p {
+        color: #475569;
+        line-height: 1.6;
+        margin: 0;
+        font-size: 0.95rem;
+    }
+
+    .ads-section {
+        padding: 3rem 0 4rem;
+    }
+
+    .ads-header {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 2rem;
+    }
+
+    @media (min-width: 576px) {
+        .ads-header {
+            flex-direction: row;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 1.5rem;
+        }
+    }
+
+    .ads-title-wrap h2 {
+        font-size: clamp(1.4rem, 3vw, 1.9rem);
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        color: var(--bg-dark);
+        margin: 0 0 0.4rem 0;
+    }
+
+    .ads-title-wrap p {
+        color: #64748b;
+        margin: 0;
+        font-size: 0.98rem;
+    }
+
+    .view-all-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.7rem 1.3rem;
+        border-radius: 0.8rem;
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        color: #ffffff;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow:
+            0 8px 20px -8px rgba(30, 58, 138, 0.45),
+            inset 0 1px 0 rgba(255,255,255,0.2);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .view-all-btn:hover {
+        transform: translateY(-2px);
+        color: #ffffff;
+        box-shadow:
+            0 14px 28px -10px rgba(30, 58, 138, 0.55),
+            inset 0 1px 0 rgba(255,255,255,0.25);
+    }
+
+    .empty-state.landing-empty {
+        padding: 3rem 1.5rem;
+        border-radius: var(--neu-radius);
+        background: var(--glass-bg);
+        backdrop-filter: blur(8px);
+        border: 1px solid var(--glass-border);
+    }
+
+    .hero-btn-teacher {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.95rem 1.8rem;
+        font-weight: 700;
+        border-radius: 0.875rem;
+        background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+        color: #ffffff;
+        border: 1px solid rgba(251, 146, 60, 0.6);
+        box-shadow:
+            0 8px 24px -6px rgba(249, 115, 22, 0.45),
+            inset 0 1px 0 rgba(255,255,255,0.25);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .hero-btn-teacher:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow:
+            0 14px 32px -8px rgba(249, 115, 22, 0.58),
+            inset 0 1px 0 rgba(255,255,255,0.35);
+        color: #ffffff;
+    }
+
+    .teacher-app-modal .modal-content {
+        border: none;
+        border-radius: 1.25rem;
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: saturate(180%) blur(12px);
+        -webkit-backdrop-filter: saturate(180%) blur(12px);
+        box-shadow:
+            0 32px 64px -20px rgba(15, 23, 42, 0.35),
+            0 0 0 1px rgba(30, 58, 138, 0.12);
+    }
+
+    .teacher-app-modal .modal-header {
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        color: #ffffff;
+        border-top-left-radius: 1.25rem;
+        border-top-right-radius: 1.25rem;
+        border-bottom: none;
+        padding: 1.35rem 1.6rem;
+    }
+
+    .teacher-app-modal .modal-title {
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+    }
+
+    .teacher-app-modal .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%);
+    }
+
+    .teacher-app-modal .modal-body {
+        padding: 1.6rem 1.6rem 1rem;
+    }
+
+    .teacher-app-modal .modal-footer {
+        border-top: 1px solid #e2e8f0;
+        padding: 1rem 1.6rem 1.6rem;
+    }
+
+    .teacher-app-alert {
+        border-radius: 0.85rem;
+        padding: 0.9rem 1.1rem;
+        margin-bottom: 1rem;
+        border: 1px solid transparent;
+        display: none;
+    }
+
+    .teacher-app-alert.show {
+        display: block;
+    }
+
+    .teacher-app-alert.success {
+        background: #ecfdf5;
+        color: #065f46;
+        border-color: #6ee7b7;
+    }
+
+    .teacher-app-alert.error {
+        background: #fef2f2;
+        color: #991b1b;
+        border-color: #fca5a5;
+    }
+
+    .spinner-inline {
+        width: 1rem;
+        height: 1rem;
+        border-width: 2px;
+        margin-right: 0.4rem;
+    }
+
+    .teacher-app-form .invalid-feedback {
+        display: block;
+        font-size: 0.8rem;
+    }
+
+    .teacher-app-form .form-control.is-invalid,
+    .teacher-app-form .form-select.is-invalid {
+        border-color: #dc2626;
+    }
+</style>
+
+<section class="mb-5">
+    <div class="hero-section px-4 px-sm-5">
+        <div class="hero-inner">
+            <div class="row g-4 align-items-center">
+                <div class="col-12 col-lg-7">
+                    <div class="hero-badge-row mb-3 mb-md-4">
+                        <span class="hero-badge">
+                            <i class="bi bi-patch-check-fill"></i>
+                            <span>Rəsmi təlim platforması</span>
+                        </span>
+                        <span class="hero-badge">
+                            <i class="bi bi-shield-check"></i>
+                            <span>Təhlükəsiz qeydiyyat</span>
+                        </span>
+                    </div>
+
+                    <h1 class="hero-title">
+                        Təlim Prosesini<br>
+                        <span style="background: linear-gradient(135deg, #bfdbfe 0%, #ffffff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Rəqəmsal İdarə Edin</span>
+                    </h1>
+
+                    <p class="hero-subtitle">
+                        Sinifləri, müəllimləri, şagirdləri və dərsləri bir yerdə asanlıqla idarə edin.
+                        Axtardığınız peşəkar müəllimi tapmaq üçün reklamlar bölməsinə baxın.
+                    </p>
+
+                    <div class="hero-cta-group">
+                        <a href="{% url 'core:login' %}" class="hero-btn-primary">
+                            <i class="bi bi-box-arrow-in-right"></i>
+                            <span>Daxil ol</span>
+                        </a>
+                        <a href="{% url 'core:student_login' %}" class="hero-btn-outline">
+                            <i class="bi bi-person-circle"></i>
+                            <span>Şagird girişi</span>
+                        </a>
+                        <a href="#reklamlar" class="hero-btn-outline">
+                            <i class="bi bi-megaphone-fill"></i>
+                            <span>Reklamlara bax</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-5">
+                    <div class="hero-icon-grid">
+                        <div class="hero-icon-card">
+                            <div class="hero-card-icon">
+                                <i class="bi bi-person-badge-fill"></i>
+                            </div>
+                            <h6>Müəllimlər</h6>
+                            <p>Peşəkar müəllimləri kəşf edin və onlarla əlaqə qurun.</p>
+                        </div>
+                        <div class="hero-icon-card">
+                            <div class="hero-card-icon">
+                                <i class="bi bi-mortarboard-fill"></i>
+                            </div>
+                            <h6>Siniflər</h6>
+                            <p>Fərqli fənnlər üzrə siniflərə baxın və qeydiyyatdan keçin.</p>
+                        </div>
+                        
+                        <div class="hero-icon-card">
+                            <div class="hero-card-icon">
+                                <i class="bi bi-calendar2-check-fill"></i>
+                            </div>
+                            <h6>Dərs Cədvəli</h6>
+                            <p>Dərs vaxtlarını və iştirakı rahatlıqla izləyin.</p>
+                        </div>
+                        <div class="hero-icon-card">
+                            <div class="hero-card-icon">
+                                <i class="bi bi-megaphone-fill"></i>
+                            </div>
+                            <h6>Reklamlar</h6>
+                            <p>İxtisaslı müəllimlərin reklamlarına baxın və uyğunu seçin.</p>
+                        </div>
+                        <div class="hero-icon-card">
+                            <div class="hero-card-icon">
+                                <i class="bi bi-gear-wide-connected"></i>
+                            </div>
+                            <h6>Kurs idarə sistemi</h6>
+                            <p>Bütün kurs proseslərini, müəllim və şagirdləri mərkəziləşdirilmiş şəkildə asanlıqla idarə edin.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-section px-1">
+        <div class="row g-3 g-sm-4">
+            <div class="col-6 col-md-3">
+                <div class="landing-stat-card primary">
+                    <div class="stat-icon-wrap">
+                        <i class="bi bi-person-badge-fill"></i>
+                    </div>
+                    <div class="stat-number">{{ total_muellimler }}</div>
+                    <div class="stat-label">Müəllim</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="landing-stat-card success">
+                    <div class="stat-icon-wrap">
+                        <i class="bi bi-mortarboard-fill"></i>
+                    </div>
+                    <div class="stat-number">{{ total_sinifler }}</div>
+                    <div class="stat-label">Sinif</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="landing-stat-card warning">
+                    <div class="stat-icon-wrap">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <div class="stat-number">{{ total_shagirdler }}</div>
+                    <div class="stat-label">Şagird</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="landing-stat-card info">
+                    <div class="stat-icon-wrap">
+                        <i class="bi bi-megaphone-fill"></i>
+                    </div>
+                    <div class="stat-number">{{ total_reklamlar }}</div>
+                    <div class="stat-label">Reklam</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="features-section">
+    <div class="section-title-row">
+        <div class="section-eyebrow">
+            <i class="bi bi-stars"></i>
+            <span>Üstünlüklər</span>
+        </div>
+        <h2 class="section-title">Nə Təklif Edirik?</h2>
+        <p class="section-subtitle">
+            TəlimQeyd platforması müəllimlər, şagirdlər və təlim mərkəzləri üçün
+            modern və istifadəçi dostu həllər təqdim edir.
+        </p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="feature-card admin">
+                <div class="feature-icon">
+                    <i class="bi bi-kanban-fill"></i>
+                </div>
+                <h4>Kurs İnzibatçıları Üçün</h4>
+                <p>
+                    Müəllimləri yaradın və təyin edin, bütün sinif, şagird və dərs
+                    proseslərini ümumi idarə edin. Hesab icazələrini, limitləri və
+                    Kursunuzu online platformada mərkəziləşdirilmiş şəkildə idarə edin.
+                </p>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="feature-card teacher">
+                <div class="feature-icon">
+                    <i class="bi bi-person-workspace"></i>
+                </div>
+                <h4>Müəllimlər Üçün</h4>
+                <p>
+                    Öz reklamınızı yerləşdirin, siniflər yaradın, şagirdlərinizi və
+                    dərs cədvəllərinizi asanlıqla idarə edin. İştirakı və qiymətləndirməni
+                    sistem üzərindən aparın.
+                </p>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="feature-card student">
+                <div class="feature-icon">
+                    <i class="bi bi-book-half"></i>
+                </div>
+                <h4>Şagirdlər Üçün</h4>
+                <p>
+                    Öz hesabınıza daxil olaraq siniflərinizi, dərs vaxtlarınızı və
+                    yekun qiymətləndirmələrinizi izləyin. Müəllim reklamlarından
+                    asanlıqla istifadə edin.
+                </p>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="feature-card ads">
+                <div class="feature-icon">
+                    <i class="bi bi-search-heart-fill"></i>
+                </div>
+                <h4>Reklam Axtarışı</h4>
+                <p>
+                    Axtardığınız fənn üzrə peşəkar müəllimi sürətlə tapın.
+                    Reklamlar bölməsində ixtisas, ad və ya soyad üzrə axtarış edin,
+                    ətraflı məlumat əldə edin.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="ads-section" id="reklamlar">
+    <div class="ads-header">
+        <div class="ads-title-wrap">
+            <div class="section-eyebrow" style="margin-bottom: 0.75rem;">
+                <i class="bi bi-megaphone-fill"></i>
+                <span>Reklamlar</span>
+            </div>
+            <h2>Son Müəllim Reklamları</h2>
+            <p>Axtardığınız ixtisaslı müəllimi buradan tapın, daha çoxu üçün hamısına baxın.</p>
+        </div>
+        <a href="{% url 'core:reklam_list' %}" class="view-all-btn">
+            <span>Hamısına bax</span>
+            <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
+
+    {% if reklamlar %}
+    <div class="row g-4">
+        {% for reklam in reklamlar %}
+        <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+            <div class="card h-100 reklam-card glass-card">
+                <div class="reklam-image-wrapper">
+                    <img src="{{ reklam.sekil_url }}" alt="{% if reklam.owner.get_full_name %}{{ reklam.owner.get_full_name }}{% else %}{{ reklam.ad }} {{ reklam.soyad }}{% endif %}" class="reklam-image"
+                         onerror="this.src='https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=professional%20teacher%20portrait%20azerbaijan%20education&image_size=square'">
+                </div>
+                <div class="card-body d-flex flex-column">
+                    {% if reklam.owner.get_full_name %}
+                    <h5 class="card-title mb-2 fw-bold">{{ reklam.owner.get_full_name }}</h5>
+                    {% else %}
+                    <h5 class="card-title mb-2 fw-bold">{{ reklam.ad }} {{ reklam.soyad }}</h5>
+                    {% endif %}
+                    <div class="list-ad-specialty-pill mb-3">
+                        {{ reklam.owner.subject|default:reklam.ixtisas_fenni }}
+                    </div>
+                    <p class="text-muted small mb-3">
+                        <i class="bi bi-people me-1"></i>Müəllim: {{ reklam.owner.get_full_name|default:reklam.owner.username }}
+                    </p>
+                    {% if reklam.telefon_nomresi %}
+                    <p class="mb-2 d-flex align-items-center gap-2 text-secondary">
+                        <i class="bi bi-telephone-fill"></i>
+                        <span>{{ reklam.telefon_nomresi }}</span>
+                    </p>
+                    {% endif %}
+                    {% if reklam.haqqinda_melumat %}
+                    <p class="text-muted small flex-grow-1 mb-3">{{ reklam.haqqinda_melumat|truncatechars:100 }}</p>
+                    {% else %}
+                    <p class="text-muted small flex-grow-1 mb-3">Haqqında məlumat daxil edilməyib.</p>
+                    {% endif %}
+                    <div class="d-flex gap-2 mt-auto">
+                        <a href="{% url 'core:reklam_detail' reklam.pk %}" class="btn btn-outline-primary flex-grow-1 d-flex align-items-center justify-content-center gap-1">
+                            <i class="bi bi-eye"></i><span>Ətraflı Bax</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state landing-empty card glass-card text-center">
+        <i class="bi bi-megaphone display-4 text-primary opacity-50 mb-3"></i>
+        <h3>Hələ reklam yerləşdirilməyib</h3>
+        <p class="text-muted mb-3">Tezliklə müəllim reklamları burada görünəcək.</p>
+        <a href="{% url 'core:reklam_list' %}" class="btn btn-primary d-inline-flex align-items-center gap-2">
+            <i class="bi bi-arrow-clockwise"></i><span>Yeniləyin</span>
+        </a>
+    </div>
+    {% endif %}
+</section>
+
+<div class="modal fade teacher-app-modal" id="teacherApplicationModal" tabindex="-1" aria-labelledby="teacherApplicationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="teacherApplicationModalLabel">
+                    <i class="bi bi-person-plus-fill"></i>
+                    Müəllim Müraciət Formu
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Bağla"></button>
+            </div>
+            <form id="teacher-application-form" class="teacher-app-form" method="POST" action="{% url 'core:teacher_application_submit' %}" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="ajax" value="1">
+                <div class="modal-body">
+                    <div id="teacherAppAlertSuccess" class="teacher-app-alert success" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        <span id="teacherAppAlertSuccessText"></span>
+                    </div>
+                    <div id="teacherAppAlertError" class="teacher-app-alert error" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <span id="teacherAppAlertErrorText">Formada düzəltdirmələr lazımdır. Xahiş olunuz sahələri yoxlayın.</span>
+                    </div>
+
+                    {% load crispy_forms_tags %}
+                    {% crispy teacher_application_form %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i> Bağla
+                    </button>
+                    <button type="submit" class="btn btn-primary">Müraciəti göndər</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    var form = document.getElementById('teacher-application-form');
+    var modalEl = document.getElementById('teacherApplicationModal');
+    var submitBtn = document.getElementById('teacherAppSubmitBtn');
+    var spinner = document.getElementById('teacherAppSpinner');
+    var submitIcon = document.getElementById('teacherAppSubmitIcon');
+    var submitText = document.getElementById('teacherAppSubmitText');
+    var alertSuccess = document.getElementById('teacherAppAlertSuccess');
+    var alertSuccessText = document.getElementById('teacherAppAlertSuccessText');
+    var alertError = document.getElementById('teacherAppAlertError');
+    var alertErrorText = document.getElementById('teacherAppAlertErrorText');
+
+    function setLoading(loading) {
+        submitBtn.disabled = loading;
+        if (loading) {
+            spinner.classList.remove('d-none');
+            submitIcon.classList.add('d-none');
+            submitText.textContent = 'Göndərilir...';
+        } else {
+            spinner.classList.add('d-none');
+            submitIcon.classList.remove('d-none');
+            submitText.textContent = 'Müraciəti göndər';
+        }
+    }
+
+    function clearFieldErrors() {
+        form.querySelectorAll('.is-invalid').forEach(function (el) {
+            el.classList.remove('is-invalid');
+        });
+        form.querySelectorAll('.invalid-feedback[data-field]').forEach(function (el) {
+            el.remove();
+        });
+    }
+
+    function showFieldErrors(errors) {
+        Object.keys(errors).forEach(function (fieldName) {
+            var fieldEl = form.querySelector('[name="' + fieldName + '"]');
+            if (!fieldEl) return;
+            fieldEl.classList.add('is-invalid');
+            var messages = errors[fieldName];
+            var msgHtml = (Array.isArray(messages) ? messages : [messages]).join('<br>');
+            var feedback = document.createElement('div');
+            feedback.className = 'invalid-feedback';
+            feedback.setAttribute('data-field', fieldName);
+            feedback.innerHTML = msgHtml;
+            fieldEl.parentNode.appendChild(feedback);
+        });
+    }
+
+    function resetAlerts() {
+        alertSuccess.classList.remove('show');
+        alertError.classList.remove('show');
+    }
+
+    if (modalEl) {
+        modalEl.addEventListener('hidden.bs.modal', function () {
+            clearFieldErrors();
+            resetAlerts();
+            form.reset();
+        });
+        modalEl.addEventListener('show.bs.modal', function () {
+            clearFieldErrors();
+            resetAlerts();
+        });
+    }
+
+
+})();
+</script>
+
+{% endblock %}

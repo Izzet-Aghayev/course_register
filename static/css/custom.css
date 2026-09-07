@@ -1,0 +1,67 @@
+/* Custom static CSS placeholder - Bootstrap 5 loaded via CDN in base.html */
+
+/* ===== Performans üçün frontend optimizasiyaları ===== */
+/* Reklam / kartlar siyahısında toplu hover effektlərini yüngülləşdir:
+   - GPU sürətləndirməsi (will-change, transform:translateZ(0), backface-visibility)
+   - Layout-a təsir edən xüsusiyyətləri aradan qaldır */
+.reklam-list-grid .reklam-card,
+.reklam-list-grid .card,
+.row.g-4 > [class*="col-"] > .card {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+.reklam-card .reklam-image {
+    will-change: transform;
+    transform: translateZ(0);
+}
+/* Reklam kartları hoverunda böyük 3D effektləri azalt; yalnız kiçik transform saxla */
+.reklam-card:hover .reklam-image {
+    transform: scale(1.04);
+}
+.card.reklam-card:hover {
+    transform: translateY(-1px);
+}
+.card.reklam-card:hover::after {
+    opacity: 0.65;
+}
+/* Buton və badge hoverlarında 0.18-0.20s sürətləndirmə */
+.btn,
+.badge,
+.action-btn,
+.attendance-radio .form-check,
+.dropdown-item,
+.navbar-toggler,
+.detail-info-item,
+.carousel-reklam-card,
+.related-ad-card,
+.header-ad-fragment {
+    transition-duration: 0.18s !important;
+}
+/* Form fokuslarında transform: translateY(-1px) layout ağrıtır; yalnız box-shadow saxla */
+.form-control:focus,
+.form-select:focus {
+    transform: none !important;
+}
+/* Cədvəl sətirlərində hover: yalnız rəng dəyişimi, ağır gradient aradan qaldırıldı */
+.table tbody tr:hover {
+    background: rgba(59, 130, 246, 0.04) !important;
+}
+/* Glass-card backdrop-filter intensity azaldıldı, daha az GPU yüküdür */
+.glass-card {
+    backdrop-filter: saturate(170%) blur(3px) !important;
+    -webkit-backdrop-filter: saturate(170%) blur(3px) !important;
+}
+/* Aşkarlayıcı (pulse) animasiyanı reklam başlığında: daha az repaint */
+.header-ad-badge-pulse {
+    animation-duration: 2.4s !important;
+}
+/* Sayfalama elementlərində yüngül keçid */
+.pagination .page-link {
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease !important;
+    will-change: auto;
+}
+/* List-dəki kartlar üçün contain strict rejimində - layout və paint izolyasiyası */
+.card.reklam-card {
+    contain: layout paint !important;
+}

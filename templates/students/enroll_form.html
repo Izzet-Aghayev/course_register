@@ -1,0 +1,75 @@
+{% extends base_template|default:"base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Şagird daxil edin | TəlimQeyd{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <nav aria-label="breadcrumb" class="mb-2">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Ana səhifə</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'core:student_account_list' %}">İstifadəçi adları</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Şagird daxil edin</li>
+        </ol>
+    </nav>
+    <h1>Şagird daxil edin</h1>
+    <p>Mövcud şagird seçin və ya yeni şagird yaradaraq seçilmiş sinfə əlavə edin.</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10 col-xl-8">
+        <div class="alert alert-primary mb-4" role="alert">
+            <div class="d-flex align-items-start gap-3">
+                <div class="flex-shrink-0">
+                    <div class="d-flex align-items-center justify-content-center rounded-3" style="width: 3rem; height: 3rem; background: rgba(59, 130, 246, 0.15);">
+                        <i class="bi bi-person-check-fill fs-4" style="color: var(--primary);"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1 pt-1">
+                    <h4 class="h6 fw-bold mb-1" style="color: var(--primary);">Sinifə Daxil Etmə Prosesi</h4>
+                    <p class="mb-0 small text-muted">
+                        <i class="bi bi-shield-lock me-1"></i>
+                        İki seçimdən birindən istifadə edin:
+                        <ol class="mt-2 mb-0 ps-3">
+                            <li><strong>Mövcud şagird seçin</strong> — sinfi olmayan və ya başqa sinifdəki şagirdlər siyahısından seçim edin. <em>Ad və soyad sahələri buraxıla bilər.</em></li>
+                            <li><strong>Yeni şagird yaradın</strong> — <em>Mövcud şagird</em> sahəsini boş buraxın, <strong>Ad</strong> və <strong>Soyad</strong> yazın. Sistem avtomatik istifadəçi adı və şifrə yaradacaq.</li>
+                        </ol>
+                        Seçilmiş <strong>hədəf sinif</strong>i şagirdin sinifləri siyahısına təkrarlayan sətir olmadan əlavə edilir. Əgər şagird artıq bu sinifdədirsə, xəta mesajı göstərilir.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card glass-card rounded-3 shadow-3d">
+            <div class="card-header bg-white border-bottom px-4 py-3" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(14, 165, 233, 0.05));">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="d-flex align-items-center justify-content-center rounded-3" style="width: 3rem; height: 3rem; background: linear-gradient(135deg, #10b981, #0ea5e9); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+                        <i class="bi bi-person-check text-white fs-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="h5 fw-bold mb-0">Şagird Daxil Etmə Forması</h3>
+                        <small class="text-muted">Ya mövcud şagirdi seçin, ya da yeni üçün ad və soyad yazın</small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger py-2 px-3 small mb-4">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    {% crispy form %}
+                    <div class="d-flex flex-column flex-sm-row gap-3 mt-4 pt-4 border-top">
+                        <a href="{% url 'core:student_account_list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Siyahıya qayıt
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

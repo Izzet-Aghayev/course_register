@@ -1,0 +1,332 @@
+{% extends base_template|default:"base.html" %}
+
+{% block title %}Dərs Detalı - {{ lesson.title_topic }} | TəlimQeyd{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <nav aria-label="breadcrumb" class="mb-2">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Ana səhifə</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'core:lesson_list' %}">Dərslər</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'core:class_detail' lesson.class_assigned.pk %}">{{ lesson.class_assigned.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Dərs Detalı</li>
+        </ol>
+    </nav>
+    <div class="d-flex flex-column flex-sm-row align-items-sm-start align-items-center justify-content-between gap-3">
+        <div class="text-center text-sm-start">
+            <h1>Dərs Detalı</h1>
+            <p class="mb-0 d-flex flex-wrap align-items-center justify-content-center justify-content-sm-start gap-2 mt-2">
+                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">
+                    <i class="bi bi-mortarboard me-1"></i>{{ lesson.class_assigned.name }}
+                </span>
+                <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-2">
+                    <i class="bi bi-calendar3 me-1"></i>{{ lesson.date|date:"d.m.Y" }}
+                </span>
+                <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3 py-2">
+                    <i class="bi bi-clock me-1"></i>{{ lesson.start_time|date:"H:i" }} - {{ lesson.end_time|date:"H:i" }}
+                </span>
+                {% if lesson.is_active and not lesson_is_expired %}
+                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">
+                    <i class="bi bi-broadcast-pin me-1"></i>Canlı
+                </span>
+                {% elif lesson_is_expired %}
+                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2">
+                    <i class="bi bi-x-circle-fill me-1"></i>Bitib
+                </span>
+                {% else %}
+                <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 py-2">
+                    <i class="bi bi-hourglass-split me-1"></i>Gözləmədə
+                </span>
+                {% endif %}
+            </p>
+            <p class="mb-0 mt-2 text-muted"><i class="bi bi-journal-text me-1"></i><strong>Mövzu:</strong> {{ lesson.title_topic }}</p>
+            {% if is_admin %}
+            <p class="mb-0 mt-1 text-muted small">
+                <i class="bi bi-person-badge me-1"></i><strong>Müəllim:</strong> {{ lesson.class_assigned.teacher.get_full_name|default:lesson.class_assigned.teacher.username }}
+            </p>
+            {% endif %}
+        </div>
+        <div class="d-flex gap-2 flex-wrap justify-content-center">
+            {% if is_lesson_teacher and not lesson_is_expired %}
+                {% if lesson.is_active %}
+                    {% if lesson.lesson_link %}
+                    <a href="{{ lesson.lesson_link }}" target="_blank" rel="noopener noreferrer" class="btn btn-success">
+                        <i class="bi bi-box-arrow-up-right me-1"></i> Dərs davam edir - aç
+                    </a>
+                    {% endif %}
+                    <form id="stop-lesson-form" method="post" action="{% url 'core:lesson_deactivate' lesson.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="ajax" value="1">
+                        <button type="submit" id="stop-lesson-btn" class="btn btn-danger">
+                            <i class="bi bi-stop-circle-fill me-1"></i> Dərsi bitir
+                        </button>
+                    </form>
+                {% else %}
+                <form id="start-lesson-form" method="post" action="{% url 'core:lesson_activate' lesson.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="ajax" value="1">
+                    <button type="submit" id="start-lesson-btn" class="btn btn-primary" {% if not lesson.lesson_link %}disabled data-bs-toggle="tooltip" title="Dərs linki təyin edilməyib. Zəhmət olmasa müəllim profilində linki əlavə edin."{% endif %}>
+                        <i class="bi bi-play-circle-fill me-1"></i> Dərsi başlat
+                    </button>
+                </form>
+                {% endif %}
+            {% endif %}
+            {% if is_teacher %}
+            <a href="{% url 'core:lesson_attendance' lesson.pk %}" class="btn btn-success">
+                <i class="bi bi-check2-square me-1"></i> Davamiyyəti və qiymətləri düzənlə
+            </a>
+            <a href="{% url 'core:lesson_update' lesson.pk %}" class="btn btn-outline-primary">
+                <i class="bi bi-pencil-fill me-1"></i> Redaktə et
+            </a>
+            {% endif %}
+            <a href="{% url 'core:class_detail' lesson.class_assigned.pk %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Sinifə qayıt
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if not is_student %}
+<div class="row g-3 g-sm-4 mb-4 mb-sm-5">
+    <div class="col-6 col-md-3">
+        <div class="stat-card card bg-success p-3 p-sm-4">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label mb-2">İştirak edir</div>
+                    <div class="stat-value">{{ count_ie }}</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card card bg-danger p-3 p-sm-4">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label mb-2">Qayıb</div>
+                    <div class="stat-value">{{ count_qb }}</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-x-circle-fill"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card card bg-warning p-3 p-sm-4">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label mb-2">Gecikir / İcazəli</div>
+                    <div class="stat-value">{{ count_gecikir|add:count_icazeli }}</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-info-circle-fill"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card card bg-info p-3 p-sm-4">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label mb-2">Qiymətlər</div>
+                    <div class="stat-value">{{ count_grades }}</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-star-fill"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-header bg-white border-bottom-0 d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3 px-4 pt-4 pb-0">
+        <div>
+            <h3 class="h5 fw-bold mb-0">{% if is_student %}Davamiyyət və Qiymətləndirmə Məlumatınız{% else %}Şagirdlərin Davamiyyət və Qiymətləndirmə Siyahısı{% endif %}</h3>
+            <p class="text-muted small mb-0">{% if is_student %}Bu dərs üzrə davamiyyət və ya qiymətləndirmə nəticəniz{% else %}Bu dərs üçün hər bir şagirdin davamiyyət və qiymətləndirmə statusu{% endif %}</p>
+        </div>
+    </div>
+    <div class="card-body p-3 p-sm-4">
+        {% if attendance_data %}
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">#</th>
+                        <th>Şagird</th>
+                        <th class="d-none d-sm-table-cell">Sinif</th>
+                        <th style="min-width: 200px;">Status / Qiymət</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student, status in attendance_data %}
+                    <tr>
+                        <td data-label="#" class="fw-bold text-muted">
+                            {{ forloop.counter }}
+                        </td>
+                        <td data-label="Şagird">
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="avatar">{{ student.full_name|slice:":1"|upper }}</span>
+                                <div>
+                                    <div class="fw-semibold">{{ student.full_name }}</div>
+                                    <small class="text-muted d-sm-none">Sinif: {{ student.current_class.name }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td data-label="Sinif" class="d-none d-sm-table-cell">
+                            <a href="{% url 'core:class_detail' student.current_class.pk %}" class="text-decoration-none">
+                                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">
+                                    <i class="bi bi-mortarboard me-1"></i>{{ student.current_class.name }}
+                                </span>
+                            </a>
+                        </td>
+                        <td data-label="Status">
+                            {% if status == '0' or status == '1' or status == '2' or status == '3' or status == '4' or status == '5' or status == '6' or status == '7' or status == '8' or status == '9' or status == '10' %}
+                            <span class="badge bg-primary text-white rounded-pill px-3 py-1 fs-6 fw-bold shadow-sm">{{ status }}</span>
+                            {% elif status == 'i/e' %}
+                            <span>İştirak edir</span>
+                            {% elif status == 'q/b' %}
+                            <span>Qayıb</span>
+                            {% elif status == 'gecikir' %}
+                            <span>Gecikir</span>
+                            {% elif status == 'icazeli' or status == 'ü/q' %}
+                            <span>İcazəli</span>
+                            {% elif status %}
+                            <span>{{ status }}</span>
+                            {% else %}
+                            <span class="text-muted">--------</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="d-flex flex-column flex-sm-row gap-3 mt-5 pt-3 border-top">
+            {% if is_teacher %}
+            <a href="{% url 'core:lesson_attendance' lesson.pk %}" class="btn btn-success flex-sm-grow-0 flex-sm-1 order-1 order-sm-2">
+                <i class="bi bi-pencil-square me-2"></i>Davamiyyəti və qiymətləri düzənlə
+            </a>
+            {% endif %}
+            <a href="{% url 'core:lesson_list' %}" class="btn btn-outline-secondary flex-sm-grow-0 flex-sm-1 order-2 order-sm-1">
+                <i class="bi bi-arrow-left me-2"></i>Dərslər siyahısına qayıt
+            </a>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-person-x"></i>
+            <h3>Bu sinifdə hələ şagird yoxdur</h3>
+            <p>Bu dərs üçün davamiyyət məlumatı göstərmək üçün əvvəlcə sinifə şagirdlər əlavə edin.</p>
+            {% if is_teacher %}
+            <a href="{% url 'core:new_student_create' %}" class="btn btn-primary mt-3">
+                <i class="bi bi-person-plus-fill me-1"></i> İlk şagirdi əlavə et
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if is_lesson_teacher and not lesson_is_expired and not lesson.is_active %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var form = document.getElementById('start-lesson-form');
+    var btn = document.getElementById('start-lesson-btn');
+    if (!form || !btn) return;
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (btn.disabled) return;
+
+        btn.disabled = true;
+        var originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-hourglass-split me-1 spinner-border spinner-border-sm"></i> Başladılır...';
+
+        var formData = new FormData(form);
+        var csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }).then(function (resp) {
+            return resp.json();
+        }).then(function (data) {
+            if (data.success) {
+                btn.className = 'btn btn-success';
+                btn.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Dərs başladıldı!';
+                setTimeout(function () {
+                    if (data.lesson_link) {
+                        window.open(data.lesson_link, '_blank', 'noopener,noreferrer');
+                    }
+                    location.reload();
+                }, 600);
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+                alert(data.message || 'Xəta baş verdi.');
+            }
+        }).catch(function (err) {
+            console.error(err);
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+            alert('Xəta baş verdi. Zəhmət olmasa yenidən cəhd edin.');
+        });
+    });
+});
+</script>
+{% endif %}
+
+{% if is_lesson_teacher and not lesson_is_expired and lesson.is_active %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var form = document.getElementById('stop-lesson-form');
+    var btn = document.getElementById('stop-lesson-btn');
+    if (!form || !btn) return;
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (btn.disabled) return;
+
+        if (!confirm('Dərsi bitirmək istədiyinizə əminsiniz? Şagirdlərin girişi bağlanacaq.')) {
+            return;
+        }
+
+        btn.disabled = true;
+        var originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-hourglass-split me-1 spinner-border spinner-border-sm"></i> Dayandırılır...';
+
+        var formData = new FormData(form);
+        var csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }).then(function (resp) {
+            return resp.json();
+        }).then(function (data) {
+            if (data.success) {
+                btn.className = 'btn btn-outline-secondary';
+                btn.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Dərs bitirildi!';
+                setTimeout(function () {
+                    location.reload();
+                }, 600);
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+                alert(data.message || 'Xəta baş verdi.');
+            }
+        }).catch(function (err) {
+            console.error(err);
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+            alert('Xəta baş verdi. Zəhmət olmasa yenidən cəhd edin.');
+        });
+    });
+});
+</script>
+{% endif %}
+{% endblock %}

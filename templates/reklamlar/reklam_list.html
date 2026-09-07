@@ -1,0 +1,187 @@
+{% extends base_template|default:"base.html" %}
+{% block title %}Reklamlar - TəlimQeyd{% endblock %}
+{% block content %}
+<div class="page-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+    <div>
+        <nav aria-label="breadcrumb" class="mb-2">
+            <ol class="breadcrumb small">
+                {% if is_teacher or is_student %}
+                <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Ana səhifə</a></li>
+                {% else %}
+                <li class="breadcrumb-item"><a href="{% url 'core:landing_page' %}">Ana səhifə</a></li>
+                {% endif %}
+                <li class="breadcrumb-item active" aria-current="page">Reklamlar</li>
+            </ol>
+        </nav>
+        <h1><i class="bi bi-megaphone-fill me-2" style="color: var(--primary);"></i>Reklamlar</h1>
+        <p>Müəllim reklamlarını ad, soyad və fənn üzrə axtarın.</p>
+    </div>
+    {% if is_teacher and can_create %}
+    <a href="{% url 'core:reklam_create' %}" class="btn btn-primary d-inline-flex align-items-center gap-2">
+        <i class="bi bi-plus-lg"></i>
+        <span>Reklam yarat</span>
+    </a>
+    {% elif permission_denied_msg and is_teacher %}
+    <div class="alert alert-warning d-inline-flex align-items-center gap-2 mb-0 py-2 px-3" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <small>{{ permission_denied_msg }}</small>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card mb-4 glass-card">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-12 col-lg-8">
+                <label class="form-label" for="reklam-search">Axtar</label>
+                <div class="search-box">
+                    <i class="bi bi-search"></i>
+                    <input id="reklam-search" type="text" name="q" class="form-control"
+                           placeholder="Ad, soyad və ya fənn üzrə axtar..." value="{{ query }}">
+                </div>
+            </div>
+            <div class="col-12 col-lg-4">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1 d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-search"></i><span>Axtar</span>
+                    </button>
+                    {% if query %}
+                    <a href="{% url 'core:reklam_list' %}" class="btn btn-outline-secondary d-flex align-items-center justify-content-center" aria-label="Təmizlə">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if reklamlar %}
+<div class="row g-4">
+    {% for reklam in reklamlar %}
+    <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+        <div class="card h-100 reklam-card glass-card">
+            <div class="reklam-image-wrapper">
+                <img src="{{ reklam.sekil_url }}" alt="{% if reklam.owner.get_full_name %}{{ reklam.owner.get_full_name }}{% else %}{{ reklam.ad }} {{ reklam.soyad }}{% endif %}" class="reklam-image"
+                     onerror="this.src='https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=professional%20teacher%20portrait%20azerbaijan%20education&image_size=square'">
+            </div>
+            <div class="card-body d-flex flex-column">
+                {% if reklam.owner.get_full_name %}
+                <h5 class="card-title mb-2 fw-bold">{{ reklam.owner.get_full_name }}</h5>
+                {% else %}
+                <h5 class="card-title mb-2 fw-bold">{{ reklam.ad }} {{ reklam.soyad }}</h5>
+                {% endif %}
+                <div class="list-ad-specialty-pill mb-3">
+                    {{ reklam.owner.subject|default:reklam.ixtisas_fenni }}
+                </div>
+                <p class="text-muted small mb-3">
+                    <i class="bi bi-people me-1"></i>Müəllim: {{ reklam.owner.get_full_name|default:reklam.owner.username }}
+                </p>
+                {% if reklam.telefon_nomresi %}
+                <p class="mb-2 d-flex align-items-center gap-2 text-secondary">
+                    <i class="bi bi-telephone-fill"></i>
+                    <span>{{ reklam.telefon_nomresi }}</span>
+                </p>
+                {% endif %}
+                {% if reklam.haqqinda_melumat %}
+                <p class="text-muted small flex-grow-1 mb-3">{{ reklam.haqqinda_melumat|truncatechars:100 }}</p>
+                {% else %}
+                <p class="text-muted small flex-grow-1 mb-3">Haqqında məlumat daxil edilməyib.</p>
+                {% endif %}
+                <div class="d-flex gap-2 mt-auto">
+                    <a href="{% url 'core:reklam_detail' reklam.pk %}" class="btn btn-outline-primary flex-grow-1 d-flex align-items-center justify-content-center gap-1">
+                        <i class="bi bi-eye"></i><span>Ətraflı Bax</span>
+                    </a>
+                    {% if is_admin or is_teacher and request.user == reklam.owner %}
+                    <a href="{% url 'core:reklam_update' reklam.pk %}" class="action-btn btn btn-outline-secondary" aria-label="Redaktə et">
+                        <i class="bi bi-pencil-square"></i>
+                    </a>
+                    <a href="{% url 'core:reklam_delete' reklam.pk %}" class="action-btn btn btn-outline-danger" aria-label="Sil">
+                        <i class="bi bi-trash3"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+</div>
+{% if page_obj.has_other_pages %}
+<nav aria-label="Səhifə naviqasiyası" class="mt-4">
+    <ul class="pagination justify-content-center flex-wrap mb-0">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page=1" aria-label="Birinci">
+                <i class="bi bi-chevron-double-left"></i>
+            </a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}" aria-label="Əvvəlki">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link" aria-label="Birinci"><i class="bi bi-chevron-double-left"></i></span>
+        </li>
+        <li class="page-item disabled">
+            <span class="page-link" aria-label="Əvvəlki"><i class="bi bi-chevron-left"></i></span>
+        </li>
+        {% endif %}
+
+        {% for i in page_obj.paginator.page_range %}
+            {% if page_obj.number == i %}
+            <li class="page-item active" aria-current="page">
+                <span class="page-link">{{ i }}</span>
+            </li>
+            {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
+            <li class="page-item">
+                <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ i }}">{{ i }}</a>
+            </li>
+            {% elif i == 1 or i == page_obj.paginator.num_pages %}
+            <li class="page-item">
+                <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ i }}">{{ i }}</a>
+            </li>
+            {% elif i == page_obj.number|add:'-3' or i == page_obj.number|add:'3' %}
+            <li class="page-item disabled">
+                <span class="page-link">…</span>
+            </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}" aria-label="Növbəti">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.paginator.num_pages }}" aria-label="Sonuncu">
+                <i class="bi bi-chevron-double-right"></i>
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link" aria-label="Növbəti"><i class="bi bi-chevron-right"></i></span>
+        </li>
+        <li class="page-item disabled">
+            <span class="page-link" aria-label="Sonuncu"><i class="bi bi-chevron-double-right"></i></span>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% else %}
+<div class="empty-state card glass-card">
+    <i class="bi bi-megaphone"></i>
+    <h3>Heç bir reklam tapılmadı</h3>
+    <p>Axtarış şərtlərini dəyişin və ya ilk reklamı yerləşdirin.</p>
+    {% if is_teacher and can_create %}
+    <a href="{% url 'core:reklam_create' %}" class="btn btn-primary mt-3 d-inline-flex align-items-center gap-2">
+        <i class="bi bi-plus-lg"></i><span>Reklam yarat</span>
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

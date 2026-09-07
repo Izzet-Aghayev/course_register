@@ -1,0 +1,230 @@
+{% extends base_template|default:"base.html" %}
+
+{% block title %}{{ class_obj.name }} | TəlimQeyd{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <nav aria-label="breadcrumb" class="mb-2">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Ana səhifə</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'core:class_list' %}">Siniflər</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ class_obj.name }}</li>
+        </ol>
+    </nav>
+    <div class="d-flex flex-column flex-sm-row align-items-sm-start align-items-center justify-content-between gap-3">
+        <div class="text-center text-sm-start">
+            <h1>{{ class_obj.name }}</h1>
+            <p class="mb-0 d-flex align-items-center flex-wrap justify-content-center justify-content-sm-start">
+                <span class="d-inline-flex align-items-center gap-2">
+                    <span class="avatar" style="width: 1.75rem; height: 1.75rem; font-size: 0.7rem;">{{ class_obj.teacher.get_full_name|default:class_obj.teacher.username|slice:":1"|upper }}</span>
+                    {{ class_obj.teacher.get_full_name|default:class_obj.teacher.username }}
+                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2 py-1 ms-1 small">{{ class_obj.teacher.subject }}</span>
+                </span>
+            </p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap justify-content-center justify-content-sm-start">
+            {% if is_teacher %}
+            <a href="{% url 'core:lesson_create' %}" class="btn btn-outline-info">
+                <i class="bi bi-calendar-plus me-1"></i> Dərs əlavə et
+            </a>
+            <a href="{% url 'core:class_update' class_obj.pk %}" class="btn btn-outline-primary">
+                <i class="bi bi-pencil-fill me-1"></i> Redaktə et
+            </a>
+            <a href="{% url 'core:new_student_create' %}" class="btn btn-primary">
+                <i class="bi bi-person-plus-fill me-1"></i> Şagird əlavə et
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4 mb-sm-5">
+    <div class="col-12 col-md-4">
+        <div class="stat-card card bg-info p-3 p-sm-4">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label mb-2">Cəmi şagirdlər</div>
+                    <div class="stat-value">{{ student_count }}</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4">
+        <div class="stat-card card bg-success p-3 p-sm-4">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label mb-2">Cəmi dərslər</div>
+                    <div class="stat-value">{{ lessons|length }}</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-calendar2-check-fill"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4">
+        <div class="stat-card card bg-warning p-3 p-sm-4">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label mb-2">Müəllim</div>
+                    <div class="stat-value" style="font-size: 1.1rem; font-weight: 700;">
+                        {{ class_obj.teacher.get_full_name|default:class_obj.teacher.username }}
+                    </div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-person-badge-fill"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-white border-bottom-0 d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3 px-4 pt-4 pb-0">
+        <div>
+            <h3 class="h5 fw-bold mb-0">Dərs Cədvəli</h3>
+            <p class="text-muted small mb-0">{{ lessons|length }} dərs</p>
+        </div>
+        {% if is_teacher %}
+        <a href="{% url 'core:lesson_create' %}" class="btn btn-outline-info btn-sm">
+            <i class="bi bi-calendar-plus me-1"></i> Yeni dərs
+        </a>
+        {% endif %}
+    </div>
+    <div class="card-body p-4">
+        {% if lessons %}
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">#</th>
+                        <th>Tarix</th>
+                        <th>Mövzu</th>
+                        <th class="d-none d-sm-table-cell">Vaxt</th>
+                        <th>Əməllər</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lesson in lessons %}
+                    <tr>
+                        <td data-label="#" class="fw-bold text-muted">{{ forloop.counter }}</td>
+                        <td data-label="Tarix">
+                            <span class="fw-semibold">{{ lesson.date|date:"d.m.Y" }}</span>
+                        </td>
+                        <td data-label="Mövzu">
+                            <div class="fw-medium">{{ lesson.title_topic }}</div>
+                        </td>
+                        <td data-label="Vaxt" class="d-none d-sm-table-cell">
+                            <span class="text-muted">{{ lesson.start_time|date:"H:i" }} - {{ lesson.end_time|date:"H:i" }}</span>
+                        </td>
+                        <td data-label="Əməllər">
+                            <div class="d-flex gap-2 justify-content-start justify-content-sm-end flex-wrap">
+                                <a href="{% url 'core:lesson_detail' lesson.pk %}" class="btn btn-outline-info btn-sm action-btn" data-bs-toggle="tooltip" title="Bax">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if is_teacher %}
+                                <a href="{% url 'core:lesson_attendance' lesson.pk %}" class="btn btn-outline-success btn-sm" data-bs-toggle="tooltip" title="Davamiyyət">
+                                    <i class="bi bi-check2-square me-1 d-sm-none"></i><span class="d-none d-sm-inline">Davamiyyət</span>
+                                </a>
+                                <a href="{% url 'core:lesson_update' lesson.pk %}" class="btn btn-outline-secondary btn-sm action-btn" data-bs-toggle="tooltip" title="Redaktə et">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </a>
+                                <a href="{% url 'core:lesson_delete' lesson.pk %}" class="btn btn-outline-danger btn-sm action-btn" data-bs-toggle="tooltip" title="Sil">
+                                    <i class="bi bi-trash-fill"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state py-4">
+            <i class="bi bi-calendar-x" style="font-size: 3rem;"></i>
+            <h3 class="fs-5 mt-2 mb-1">Hələ dərs yoxdur</h3>
+            <p class="small">Bu sinif üçün ilk dərsi yaradın.</p>
+            {% if is_teacher %}
+            <a href="{% url 'core:lesson_create' %}" class="btn btn-outline-info btn-sm mt-2">
+                <i class="bi bi-calendar-plus me-1"></i>İlk dərs əlavə et
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white border-bottom-0 d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3 px-4 pt-4 pb-0">
+        <div>
+            <h3 class="h5 fw-bold mb-0">Sinif şagirdləri</h3>
+            <p class="text-muted small mb-0">Bu sinifdə {{ student_count }} şagird</p>
+        </div>
+        {% if is_teacher %}
+        <a href="{% url 'core:new_student_create' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i> Şagird qeydiyyatı
+        </a>
+        {% endif %}
+    </div>
+    <div class="card-body p-4">
+        {% if students %}
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">#</th>
+                        <th>Tam adı</th>
+                        <th class="d-none d-sm-table-cell">Qeydiyyat</th>
+                        {% if is_teacher %}
+                        <th>Əməllər</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td data-label="#" class="fw-bold text-muted">{{ forloop.counter }}</td>
+                        <td data-label="Tam adı">
+                            <div class="d-flex align-items-center gap-3">
+                                {% with student.get_full_name as sname %}
+                                <span class="avatar">{{ sname|default:student.full_name|slice:":1"|upper }}</span>
+                                <div>
+                                    <div class="fw-semibold">{{ sname|default:student.full_name }}</div>
+                                    <small class="text-muted d-sm-none">ID: {{ student.pk }}</small>
+                                </div>
+                                {% endwith %}
+                            </div>
+                        </td>
+                        <td data-label="Qeydiyyat" class="d-none d-sm-table-cell">
+                            <small class="text-muted">{{ student.created_at|date:"d.m.Y" }}</small>
+                        </td>
+                        {% if is_teacher %}
+                        <td data-label="Əməllər">
+                            <div class="d-flex gap-2 justify-content-start justify-content-sm-end">
+                                <a href="{% url 'core:student_update' student.pk %}" class="btn btn-outline-secondary btn-sm action-btn" data-bs-toggle="tooltip" title="Redaktə et">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </a>
+                                <a href="{% url 'core:student_delete' student.pk %}" class="btn btn-outline-danger btn-sm action-btn" data-bs-toggle="tooltip" title="Sil">
+                                    <i class="bi bi-trash-fill"></i>
+                                </a>
+                            </div>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-person-x"></i>
+            <h3>Hələ şagird qeydiyyatdan keçməyib</h3>
+            <p>Bu sinifdə şagird yoxdur. Başlamaq üçün ilk şagirdi qeydiyyatdan keçirin.</p>
+            {% if is_teacher %}
+            <a href="{% url 'core:new_student_create' %}" class="btn btn-primary mt-3">
+                <i class="bi bi-person-plus-fill me-1"></i> İlk şagirdi əlavə et
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

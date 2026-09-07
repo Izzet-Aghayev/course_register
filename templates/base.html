@@ -1,0 +1,2463 @@
+<!DOCTYPE html>
+<html lang="az" class="h-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Təlim Qeydiyyat Sistemi - Sinifləri, müəllimləri və şagirdləri idarə edin">
+    <title>{% block title %}Təlim Qeydiyyatı{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/htmx.org@1.9.12/dist/htmx.min.js"></script>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-dark: #172554;
+            --primary-light: #3b82f6;
+            --accent: #0ea5e9;
+            --secondary: #64748b;
+            --success: #10b981;
+            --danger: #dc2626;
+            --warning: #f97316;
+            --info: #0ea5e9;
+            --bg-light: #f1f5f9;
+            --bg-muted: #e2e8f0;
+            --bg-dark: #0f172a;
+            --border-subtle: rgba(148, 163, 184, 0.25);
+            --glass-bg: rgba(255, 255, 255, 0.72);
+            --glass-border: rgba(255, 255, 255, 0.35);
+            --shadow-soft:
+                4px 4px 10px rgba(148, 163, 184, 0.12),
+                -4px -4px 10px rgba(255, 255, 255, 0.7);
+            --shadow-inset:
+                inset 2px 2px 6px rgba(148, 163, 184, 0.14),
+                inset -2px -2px 6px rgba(255, 255, 255, 0.85);
+            --shadow-glow:
+                0 0 0 1px rgba(59, 130, 246, 0.15),
+                0 8px 20px -6px rgba(30, 58, 138, 0.22);
+            --shadow-3d:
+                0 1px 2px rgba(15, 23, 42, 0.05),
+                0 4px 12px -4px rgba(15, 23, 42, 0.08);
+            --shadow-3d-danger:
+                0 1px 2px rgba(185, 28, 28, 0.05),
+                0 4px 12px -4px rgba(220, 38, 38, 0.16);
+            --header-gradient: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #3b82f6 100%);
+            --success-gradient: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
+            --warning-gradient: linear-gradient(135deg, #ea580c 0%, #f97316 50%, #fb923c 100%);
+            --danger-gradient: linear-gradient(135deg, #b91c1c 0%, #dc2626 50%, #ef4444 100%);
+            --info-gradient: linear-gradient(135deg, #0369a1 0%, #0ea5e9 50%, #38bdf8 100%);
+            --neu-radius: 1.25rem;
+        }
+
+        * { box-sizing: border-box; }
+
+        html { scroll-behavior: auto; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-light);
+            background-image:
+                radial-gradient(circle at 15% 10%, rgba(59, 130, 246, 0.06) 0%, transparent 45%),
+                radial-gradient(circle at 85% 90%, rgba(14, 165, 233, 0.04) 0%, transparent 45%);
+            color: #0f172a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+            line-height: 1.6;
+            letter-spacing: -0.01em;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            letter-spacing: -0.025em;
+            font-weight: 800;
+            color: var(--bg-dark);
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.25rem;
+            background: var(--header-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.03em;
+        }
+
+        .navbar {
+            box-shadow:
+                0 1px 0 rgba(255, 255, 255, 0.9) inset,
+                0 4px 14px rgba(15, 23, 42, 0.05);
+            backdrop-filter: saturate(180%) blur(8px);
+            -webkit-backdrop-filter: saturate(180%) blur(8px);
+            background: rgba(255, 255, 255, 0.82) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.9);
+            transform: translateZ(0);
+            will-change: transform;
+        }
+
+        .nav-link {
+            font-weight: 600;
+            padding: 0.5rem 1rem !important;
+            border-radius: 0.75rem;
+            transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+            color: #334155;
+            will-change: transform;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(30, 58, 138, 0.08);
+            color: var(--primary) !important;
+            transform: translateY(-4px);
+        }
+
+        .sidebar-col {
+            position: sticky;
+            top: 76px;
+            height: calc(100vh - 86px);
+            overflow: hidden;
+            align-self: flex-start;
+            transform: translateZ(0);
+            will-change: transform;
+        }
+
+        .sidebar-wrapper {
+            position: relative;
+            height: 100%;
+            max-height: calc(100vh - 86px);
+            overflow-y: auto;
+            overflow-x: hidden;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            padding: 1rem 0.85rem 2.5rem;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: saturate(180%) blur(6px);
+            -webkit-backdrop-filter: saturate(180%) blur(6px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--neu-radius);
+            box-shadow: var(--shadow-3d);
+            transform: translateZ(0);
+            will-change: scroll-position;
+        }
+
+        .sidebar-wrapper::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .sidebar-wrapper::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar-wrapper::-webkit-scrollbar-thumb {
+            background-color: rgba(148, 163, 184, 0.35);
+            border-radius: 9999px;
+        }
+
+        .sidebar-wrapper::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(100, 116, 139, 0.6);
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.8rem 0.95rem;
+            color: #475569;
+            text-decoration: none;
+            border-radius: 0.875rem;
+            font-weight: 600;
+            transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+            margin-bottom: 0.25rem;
+            font-size: 0.95rem;
+            position: relative;
+            overflow: hidden;
+            will-change: transform;
+        }
+
+        .sidebar-link:hover {
+            color: var(--primary);
+            background: rgba(30, 58, 138, 0.05);
+            transform: translateX(4px);
+        }
+
+        .sidebar-link.active {
+            background: var(--header-gradient);
+            color: white;
+            box-shadow: var(--shadow-glow);
+            transform: translateX(0);
+        }
+
+        .sidebar-link.active:hover {
+            color: white;
+        }
+
+        .sidebar-link i {
+            font-size: 1.1rem;
+            width: 1.5rem;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .card {
+            border: 1px solid var(--glass-border);
+            border-radius: var(--neu-radius);
+            background: linear-gradient(145deg, rgba(255,255,255,0.94) 0%, rgba(250, 251, 255, 0.86) 100%);
+            backdrop-filter: saturate(160%) blur(4px);
+            -webkit-backdrop-filter: saturate(160%) blur(4px);
+            box-shadow: var(--shadow-3d);
+            transition: transform 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            contain: layout paint;
+            transform: translateZ(0);
+            will-change: transform;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: saturate(180%) blur(6px);
+            -webkit-backdrop-filter: saturate(180%) blur(6px);
+            border: 1px solid var(--glass-border);
+            box-shadow:
+                0 1px 0 rgba(255,255,255,0.7) inset,
+                var(--shadow-3d);
+        }
+
+        .shadow-3d {
+            box-shadow:
+                0 4px 6px rgba(15, 23, 42, 0.04),
+                0 10px 22px -6px rgba(30, 58, 138, 0.16);
+        }
+
+        .shadow-3d-danger {
+            box-shadow: var(--shadow-3d-danger);
+        }
+
+        .stat-card {
+            background: var(--header-gradient);
+            color: #ffffff !important;
+            border: none;
+            border-radius: var(--neu-radius);
+            box-shadow: var(--shadow-glow);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            transform: translateZ(0);
+            will-change: transform;
+            contain: layout paint;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -30%;
+            width: 280px;
+            height: 280px;
+            background: radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 60%);
+            z-index: -1;
+            border-radius: 50%;
+        }
+
+        .stat-card.bg-primary { background: var(--header-gradient) !important; box-shadow: 0 0 0 1px rgba(59,130,246,0.2), 0 8px 20px -6px rgba(30,58,138,0.32) !important; }
+        .stat-card.bg-success { background: var(--success-gradient) !important; box-shadow: 0 0 0 1px rgba(16,185,129,0.2), 0 8px 20px -6px rgba(16,185,129,0.28) !important; }
+        .stat-card.bg-warning { background: var(--warning-gradient) !important; box-shadow: 0 0 0 1px rgba(249,115,22,0.2), 0 8px 20px -6px rgba(249,115,22,0.28) !important; }
+        .stat-card.bg-info    { background: var(--info-gradient) !important;    box-shadow: 0 0 0 1px rgba(14,165,233,0.2), 0 8px 20px -6px rgba(14,165,233,0.28) !important; }
+        .stat-card.bg-danger  { background: var(--danger-gradient) !important;  box-shadow: 0 0 0 1px rgba(220,38,38,0.2), 0 8px 20px -6px rgba(220,38,38,0.28) !important; }
+
+        a.stat-card-link {
+            display: block;
+            text-decoration: none;
+            color: #ffffff !important;
+            cursor: pointer;
+            height: 100%;
+            border-radius: var(--neu-radius);
+            transition: transform 0.2s ease;
+            will-change: transform;
+        }
+
+        a.stat-card-link:hover,
+        a.stat-card-link:focus-visible {
+            color: #ffffff !important;
+            text-decoration: none;
+            transform: translateY(-4px);
+        }
+
+        a.stat-card-link:focus-visible {
+            outline: 3px solid rgba(59, 130, 246, 0.45);
+            outline-offset: 3px;
+        }
+
+        a.stat-card-link.stat-card {
+            height: 100%;
+        }
+
+        .stat-card .stat-icon {
+            width: 3.5rem;
+            height: 3.5rem;
+            background: rgba(255, 255, 255, 0.22);
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
+            color: #ffffff !important;
+        }
+
+        .stat-card .stat-icon i {
+            color: #ffffff !important;
+        }
+
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -0.035em;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            color: #ffffff !important;
+        }
+
+        .stat-card .stat-label {
+            opacity: 0.94;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #ffffff !important;
+        }
+
+        .btn {
+            border-radius: 0.75rem;
+            font-weight: 700;
+            padding: 0.65rem 1.3rem;
+            transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+            border: none;
+            letter-spacing: -0.01em;
+            line-height: 1.4;
+            position: relative;
+            overflow: hidden;
+            will-change: transform;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 50%);
+            opacity: 0;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-4px);
+            color: white;
+        }
+
+        .btn-primary:active { transform: translateY(0); }
+
+        .btn-outline-primary {
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            background: rgba(255,255,255,0.75);
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--header-gradient);
+            border-color: var(--primary);
+            color: white;
+            transform: translateY(-4px);
+        }
+
+        .form-control, .form-select {
+            border-radius: 0.75rem;
+            padding: 0.7rem 1rem;
+            border: 1.5px solid var(--border-subtle);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+            background: rgba(255, 255, 255, 0.95);
+            font-size: 0.95rem;
+            box-shadow: var(--shadow-inset);
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-light);
+            box-shadow:
+                0 0 0 4px rgba(59, 130, 246, 0.12);
+            background: #fff;
+        }
+
+        .form-label {
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 0.45rem;
+            font-size: 0.88rem;
+            letter-spacing: -0.005em;
+        }
+
+        .table {
+            border-radius: 0.875rem;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.92);
+            contain: layout paint;
+        }
+
+        .table thead th {
+            background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+            border-bottom: 2px solid rgba(59, 130, 246, 0.25);
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.09em;
+            padding: 1rem 1.1rem;
+            position: relative;
+        }
+
+        .table thead th::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 8%;
+            right: 8%;
+            height: 2px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, rgba(30,58,138,0), rgba(59, 130, 246, 0.75), rgba(30,58,138,0));
+            opacity: 0.8;
+        }
+
+        .table tbody td {
+            padding: 1rem 1.1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+            font-size: 0.95rem;
+        }
+
+        .table tbody tr {
+            transition: background-color 0.18s ease;
+        }
+
+        .table tbody tr:hover {
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.03) 0%, rgba(14, 165, 233, 0.04) 50%, rgba(59, 130, 246, 0.03) 100%);
+        }
+
+        .badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.74rem;
+            letter-spacing: 0.015em;
+            transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+        }
+
+        .badge-glass {
+            background: rgba(30, 58, 138, 0.12);
+            color: var(--primary);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+        }
+
+        .alert {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            border-radius: 1rem;
+            backdrop-filter: saturate(160%) blur(5px);
+            -webkit-backdrop-filter: saturate(160%) blur(5px);
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.12) 45%, transparent 100%),
+                rgba(255,255,255,0.92);
+            box-shadow:
+                0 1px 0 rgba(255, 255, 255, 0.9) inset,
+                0 2px 4px rgba(15, 23, 42, 0.04),
+                0 8px 20px rgba(15, 23, 42, 0.07),
+                0 16px 36px -12px rgba(30, 58, 138, 0.28);
+            transform: translateZ(0);
+        }
+
+        .alert::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--header-gradient);
+            pointer-events: none;
+        }
+
+        .alert-toast-3d {
+            animation: toast-slide-in 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .alert.alert-closing {
+            animation: toast-slide-out 0.35s ease forwards;
+        }
+
+        @keyframes toast-slide-in {
+            from { opacity: 0; transform: translateY(-14px) scale(0.99); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes toast-slide-out {
+            to { opacity: 0; transform: translateY(-10px) scale(0.99); }
+        }
+
+        .modal-content {
+            border: 1px solid var(--glass-border);
+            border-radius: var(--neu-radius);
+            box-shadow:
+                0 0 0 1px rgba(59, 130, 246, 0.08),
+                0 18px 44px -10px rgba(15, 23, 42, 0.24);
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: saturate(180%) blur(6px);
+            -webkit-backdrop-filter: saturate(180%) blur(6px);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+            padding: 1.4rem 1.6rem;
+        }
+
+        .modal-footer {
+            border-top: 1px solid rgba(226, 232, 240, 0.8);
+            padding: 1.4rem 1.6rem;
+        }
+
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin: 0;
+        }
+
+        .breadcrumb-item a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .breadcrumb-item a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+        .breadcrumb-item + .breadcrumb-item::before {
+            color: #94a3b8;
+        }
+
+        .breadcrumb-item.active {
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.2rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .page-header h1 {
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: var(--bg-dark);
+            margin: 0;
+            letter-spacing: -0.035em;
+        }
+
+        .page-header p {
+            color: #64748b;
+            margin: 0.4rem 0 0 0;
+            font-size: 0.96rem;
+            font-weight: 500;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 1.05rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            z-index: 2;
+        }
+
+        .search-box input {
+            padding-left: 2.9rem;
+        }
+
+        .class-card {
+            border-left: 5px solid;
+            border-image: var(--header-gradient) 1;
+        }
+
+        .participant-bar {
+            height: 0.5rem;
+            border-radius: 999px;
+            overflow: hidden;
+            background: rgba(226, 232, 240, 0.8);
+            box-shadow: var(--shadow-inset);
+        }
+
+        .participant-bar-fill {
+            height: 100%;
+            background: var(--header-gradient);
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4.5rem 2rem;
+        }
+
+        .empty-state i {
+            font-size: 3.8rem;
+            background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+
+        .empty-state h3 {
+            color: #334155;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.025em;
+        }
+
+        .empty-state p {
+            color: #94a3b8;
+            margin: 0;
+            font-size: 0.96rem;
+            font-weight: 500;
+        }
+
+        @media (max-width: 575.98px) {
+            .page-header h1 { font-size: 1.45rem; }
+            .stat-card .stat-value { font-size: 1.7rem; }
+            .stat-card .stat-icon { width: 3rem; height: 3rem; font-size: 1.35rem; }
+            .card-body { padding: 1rem; }
+            .table thead { display: none; }
+            .table, .table tbody, .table tr, .table td { display: block; width: 100%; }
+            .table tr { margin-bottom: 1rem; border-radius: 0.875rem; overflow: hidden; background: #fff; box-shadow: var(--shadow-3d); border: 1px solid var(--glass-border); }
+            .table td { position: relative; padding-left: 42% !important; padding-right: 1rem !important; border-bottom: 1px solid #f1f5f9; }
+            .table td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 40%;
+                height: 100%;
+                padding: 1rem 0.85rem;
+                background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+                font-weight: 800;
+                font-size: 0.68rem;
+                color: var(--primary);
+                text-transform: uppercase;
+                letter-spacing: 0.07em;
+                display: flex;
+                align-items: center;
+                border-right: 1px solid rgba(226, 232, 240, 0.8);
+            }
+            .table td:last-child { border-bottom: none; }
+            .d-xs-none { display: none !important; }
+            .btn { padding: 0.55rem 0.95rem; font-size: 0.88rem; }
+            :root { --neu-radius: 1rem; }
+        }
+
+        @media (min-width: 576px) and (max-width: 767.98px) {
+            .page-header h1 { font-size: 1.55rem; }
+            .stat-card .stat-value { font-size: 1.8rem; }
+            .card-body { padding: 1.3rem; }
+            .table thead th, .table tbody td { padding: 0.85rem 0.75rem; font-size: 0.9rem; }
+            .d-sm-none { display: none !important; }
+        }
+
+        @media (min-width: 768px) and (max-width: 991.98px) {
+            .page-header h1 { font-size: 1.65rem; }
+            .card-body { padding: 1.6rem; }
+            .d-md-none { display: none !important; }
+        }
+
+        @media (min-width: 992px) and (max-width: 1199.98px) {
+            .page-header h1 { font-size: 1.75rem; }
+            .d-lg-none { display: none !important; }
+        }
+
+        @media (min-width: 1200px) and (max-width: 1399.98px) {
+            .page-header h1 { font-size: 1.9rem; }
+            .container-xl { max-width: 1340px; }
+            .d-xl-none { display: none !important; }
+        }
+
+        @media (min-width: 1400px) {
+            .page-header h1 { font-size: 2.1rem; }
+            .container-fluid { padding: 0 2.8rem; }
+            .d-xxl-none { display: none !important; }
+        }
+
+        .dropdown-menu {
+            border: 1px solid var(--glass-border);
+            border-radius: 0.875rem;
+            box-shadow:
+                0 0 0 1px rgba(59, 130, 246, 0.08),
+                0 10px 28px rgba(15, 23, 42, 0.12),
+                0 2px 6px rgba(15, 23, 42, 0.04);
+            padding: 0.6rem;
+            background: rgba(255, 255, 255, 0.97);
+            backdrop-filter: saturate(180%) blur(6px);
+            -webkit-backdrop-filter: saturate(180%) blur(6px);
+            transform: translateZ(0);
+        }
+
+        .dropdown-item {
+            border-radius: 0.625rem;
+            padding: 0.6rem 0.95rem;
+            font-weight: 600;
+            transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+            color: #334155;
+            font-size: 0.93rem;
+        }
+
+        .dropdown-item:hover {
+            background: linear-gradient(135deg, rgba(30, 58, 138, 0.09), rgba(59, 130, 246, 0.06));
+            color: var(--primary);
+            transform: translateX(2px);
+        }
+
+        .avatar {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            background: var(--header-gradient);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            box-shadow:
+                0 0 0 3px rgba(59, 130, 246, 0.12),
+                0 4px 12px rgba(30, 58, 138, 0.22);
+            letter-spacing: 0.01em;
+            flex-shrink: 0;
+            border: 2px solid rgba(255, 255, 255, 0.95);
+        }
+
+        .avatar-lg {
+            width: 5rem;
+            height: 5rem;
+            font-size: 1.7rem;
+            box-shadow:
+                0 0 0 4px rgba(59, 130, 246, 0.12),
+                0 8px 24px rgba(30, 58, 138, 0.28);
+        }
+
+        .sidebar-title {
+            font-size: 0.68rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.13em;
+            color: #94a3b8;
+            padding: 0.8rem 0.9rem 0.45rem;
+        }
+
+        .content-wrapper {
+            min-height: calc(100vh - 64px);
+            padding: 1.6rem 0;
+        }
+
+        .action-btn {
+            width: 2.3rem;
+            height: 2.3rem;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.65rem;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
+        }
+
+        .attendance-radio {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+        }
+
+        .attendance-radio .form-check {
+            margin: 0;
+            padding: 0.55rem 1rem;
+            border-radius: 0.75rem;
+            border: 1.5px solid var(--border-subtle);
+            transition: border-color 0.18s ease, background-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+            background: rgba(255,255,255,0.9);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .attendance-radio .form-check:hover {
+            border-color: var(--primary-light);
+            background: rgba(59, 130, 246, 0.04);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-3d);
+        }
+
+        .attendance-radio .form-check-input:checked + .form-check-label {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .navbar-toggler {
+            padding: 0.5rem 0.65rem;
+            border-radius: 0.65rem;
+            border: 1.5px solid var(--border-subtle) !important;
+            transition: border-color 0.18s ease, background-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+            background: rgba(255,255,255,0.85);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .navbar-toggler:hover {
+            background: linear-gradient(135deg, rgba(30, 58, 138, 0.06), rgba(59, 130, 246, 0.03));
+            border-color: rgba(59, 130, 246, 0.35) !important;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-3d);
+        }
+
+        .navbar-toggler:focus {
+            box-shadow:
+                0 0 0 4px rgba(59, 130, 246, 0.12),
+                var(--shadow-3d) !important;
+        }
+
+        .offcanvas {
+            border-right: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: saturate(180%) blur(6px);
+            -webkit-backdrop-filter: saturate(180%) blur(6px);
+        }
+
+        .offcanvas-header {
+            background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1.1rem 1.35rem;
+        }
+
+        .offcanvas-title {
+            font-weight: 800;
+        }
+
+        .z-3 { z-index: 1050; }
+
+        .reklam-image-wrapper {
+            position: relative;
+            aspect-ratio: 1 / 1;
+            overflow: hidden;
+            margin: 0.9rem 0.9rem 0;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #eef2ff 0%, #e0f2fe 100%);
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+        }
+
+        .reklam-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+            border-radius: 20px;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .reklam-card:hover .reklam-image {
+            transform: scale(1.07);
+        }
+
+        .reklam-card {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .reklam-card .card-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .reklam-detail-image-wrapper {
+            display: inline-block;
+            position: relative;
+            padding: 8px;
+            background: linear-gradient(135deg, #dbeafe 0%, #e0f2fe 50%, #ede9fe 100%);
+            border-radius: 50%;
+            box-shadow: var(--shadow-3d);
+        }
+
+        .reklam-detail-image {
+            width: 160px;
+            height: 160px;
+            object-fit: cover;
+            border: 5px solid rgba(255, 255, 255, 0.95);
+        }
+
+        .detail-info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 0.85rem 0.95rem;
+            border-radius: 0.75rem;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.04), rgba(14, 165, 233, 0.03));
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            transition: all 0.25s ease;
+        }
+
+        .detail-info-item:hover {
+            box-shadow: var(--shadow-3d);
+            transform: translateY(-1px);
+            border-color: rgba(59, 130, 246, 0.2);
+        }
+
+        .detail-info-icon {
+            width: 2.6rem;
+            height: 2.6rem;
+            border-radius: 0.75rem;
+            background: var(--header-gradient);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.22);
+        }
+
+        .detail-info-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            margin-bottom: 0.15rem;
+        }
+
+        .detail-info-value {
+            font-weight: 700;
+            color: var(--bg-dark);
+            font-size: 0.95rem;
+        }
+
+        .prose-section {
+            height: auto;
+            min-height: 0;
+            padding: 0.85rem 1rem;
+            border-radius: 0.85rem;
+            background: linear-gradient(135deg, rgba(248, 250, 252, 0.8), rgba(255,255,255,0.95));
+            border: 1px solid var(--border-subtle);
+        }
+
+        .prose-section p {
+            height: auto;
+            margin: 0;
+        }
+
+        .reklam-about-card {
+            height: auto !important;
+            align-self: flex-start;
+        }
+
+        .reklam-about-card .empty-state {
+            padding: 1.1rem 0.5rem !important;
+        }
+
+        .reklam-about-card .empty-state i {
+            font-size: 2rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .reklam-about-card .empty-state h3 {
+            font-size: 1rem;
+        }
+
+        .carousel-reklam-wrapper {
+            margin-top: 1.35rem;
+            margin-bottom: 0.85rem;
+            padding: 0.7rem 0.8rem 0.45rem;
+            border: 1px solid rgba(125, 211, 252, 0.45);
+            position: relative;
+            background: linear-gradient(135deg, #0b1224 0%, #1e3a8a 52%, #0284c7 100%);
+            border-radius: 1rem;
+            box-shadow:
+                0 0 0 1px rgba(56, 189, 248, 0.28),
+                0 8px 18px rgba(14, 165, 233, 0.32),
+                0 2px 0 rgba(186, 230, 253, 0.35) inset;
+            max-width: 100%;
+        }
+
+        #reklamCarousel {
+            position: relative;
+            padding: 0.15rem 2.1rem 1.15rem;
+        }
+
+        .carousel-reklam-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 8%;
+            right: 8%;
+            height: 2px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, transparent, #7dd3fc, transparent);
+        }
+
+        .carousel-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.45rem;
+            padding: 0 0.25rem;
+            gap: 0.75rem;
+        }
+
+        .carousel-section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0;
+            font-size: 0.92rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #f8fafc;
+        }
+
+        .carousel-section-title i {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.65rem;
+            height: 1.65rem;
+            background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
+            color: white;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            box-shadow: 0 4px 10px rgba(14, 165, 233, 0.45);
+        }
+
+        .btn-carousel-more {
+            color: #e0f2fe !important;
+            border-color: rgba(186, 230, 253, 0.45) !important;
+            background: rgba(15, 23, 42, 0.25);
+            padding: 0.2rem 0.65rem;
+            font-size: 0.75rem;
+        }
+
+        .btn-carousel-more:hover {
+            color: #0f172a !important;
+            background: #e0f2fe !important;
+            border-color: #e0f2fe !important;
+        }
+
+        .carousel-item-wrapper {
+            padding: 0.1rem 0.2rem 0.45rem;
+        }
+
+        .carousel-reklam-card {
+            display: flex;
+            gap: 0.55rem;
+            padding: 0.4rem 0.5rem;
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, rgba(255,255,255,0.98) 0%, #e0f2fe 100%);
+            border: 1px solid rgba(186, 230, 253, 0.7);
+            box-shadow: 0 5px 12px rgba(2, 6, 23, 0.22);
+            transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+            height: auto;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .carousel-reklam-card:hover {
+            transform: translateY(-2px);
+            box-shadow:
+                0 0 0 1px rgba(59, 130, 246, 0.18),
+                0 8px 18px rgba(15, 23, 42, 0.07),
+                0 14px 36px -10px rgba(30, 58, 138, 0.18);
+            color: inherit;
+        }
+
+        .carousel-reklam-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            object-fit: cover;
+            object-position: center;
+            flex-shrink: 0;
+            border: 2px solid rgba(255,255,255,0.95);
+            box-shadow: 0 3px 8px rgba(15, 23, 42, 0.18);
+        }
+
+        .carousel-reklam-info {
+            min-width: 0;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .carousel-reklam-name {
+            font-weight: 800;
+            font-size: 0.78rem;
+            letter-spacing: -0.02em;
+            color: var(--bg-dark);
+            margin: 0 0 0.1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .carousel-reklam-ixtisas {
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: var(--primary);
+            background: rgba(59, 130, 246, 0.12);
+            padding: 0.08rem 0.4rem;
+            border-radius: 999px;
+            display: inline-block;
+            align-self: flex-start;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .carousel-control-btn {
+            width: 1.85rem;
+            height: 1.85rem;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            color: var(--primary);
+            box-shadow: var(--shadow-3d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            top: 45%;
+            opacity: 1;
+            transition: all 0.25s ease;
+        }
+
+        .carousel-control-btn:hover {
+            background: var(--header-gradient);
+            color: white;
+            transform: scale(1.08);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .carousel-control-prev { left: -0.2rem; }
+        .carousel-control-next { right: -0.2rem; }
+
+        .carousel-indicators-reklam {
+            margin-bottom: 0;
+        }
+
+        .carousel-indicators-reklam button {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #cbd5e1;
+            border: none;
+            transition: background-color 0.2s ease, width 0.2s ease, box-shadow 0.2s ease;
+            opacity: 1;
+            margin: 0 3px;
+        }
+
+        .carousel-indicators-reklam button.active {
+            background: var(--header-gradient);
+            width: 24px;
+            border-radius: 999px;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        @media (max-width: 575.98px) {
+            .reklam-detail-image { width: 130px; height: 130px; }
+            .reklam-image-wrapper { margin: 0.7rem 0.7rem 0; border-radius: 16px; }
+            .reklam-image { border-radius: 16px; }
+            .carousel-reklam-wrapper { padding: 0.55rem 0.6rem 0.35rem; margin-top: 1rem; }
+            #reklamCarousel { padding: 0.1rem 1.7rem 1rem; }
+            .carousel-section-title { font-size: 0.85rem; }
+            .carousel-reklam-image { width: 36px; height: 36px; }
+            .carousel-item-wrapper { padding: 0.05rem 0.15rem 0.35rem; }
+            .header-ad-widget { display: none !important; }
+        }
+
+        @media (min-width: 576px) and (max-width: 767.98px) {
+            .header-ad-widget { max-width: 320px; }
+            .header-ad-fragment { padding: 0.35rem 0.45rem; }
+            .header-ad-avatar { width: 30px; height: 30px; }
+            .header-ad-name { font-size: 0.7rem; }
+            .header-ad-ixtisas { font-size: 0.6rem; }
+        }
+
+        .header-ad-widget {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.4rem 0.5rem;
+            border-radius: 1rem;
+            background:
+                linear-gradient(145deg, rgba(255,255,255,0.96) 0%, rgba(248, 250, 252, 0.88) 100%);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            box-shadow:
+                0 0 0 1px rgba(59, 130, 246, 0.06),
+                0 2px 4px rgba(15, 23, 42, 0.04),
+                0 6px 16px -5px rgba(30, 58, 138, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.85);
+            backdrop-filter: saturate(180%) blur(5px);
+            -webkit-backdrop-filter: saturate(180%) blur(5px);
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+            flex-shrink: 0;
+            transform: translateZ(0);
+            will-change: transform;
+        }
+
+        .header-ad-widget::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1.5px;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(59, 130, 246, 0.55) 30%,
+                rgba(14, 165, 233, 0.65) 50%,
+                rgba(59, 130, 246, 0.55) 70%,
+                transparent 100%);
+            opacity: 0.85;
+            z-index: 1;
+        }
+
+        .header-ad-widget::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 10% 10%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 90% 90%, rgba(14, 165, 233, 0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .header-ad-fragment {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            padding: 0.4rem 0.55rem;
+            border-radius: 0.75rem;
+            text-decoration: none !important;
+            color: inherit;
+            transition: background-color 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease, opacity 0.3s ease;
+            position: relative;
+            z-index: 2;
+            background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(239, 246, 255, 0.5) 100%);
+            border: 1px solid rgba(191, 219, 254, 0.5);
+            min-width: 0;
+            max-width: 200px;
+            opacity: 0;
+            transform: translateY(4px);
+        }
+
+        .header-ad-fragment.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .header-ad-fragment:hover {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(14, 165, 233, 0.06) 100%);
+            border-color: rgba(59, 130, 246, 0.35);
+            box-shadow:
+                0 0 0 3px rgba(59, 130, 246, 0.1),
+                0 3px 10px -3px rgba(30, 58, 138, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+        }
+
+        .header-ad-fragment:hover .header-ad-avatar {
+            box-shadow:
+                0 0 0 2px rgba(59, 130, 246, 0.35),
+                0 3px 10px rgba(30, 58, 138, 0.26);
+            transform: scale(1.05);
+        }
+
+        .header-ad-fragment:hover .header-ad-name {
+            color: var(--primary);
+        }
+
+        .header-ad-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: center;
+            flex-shrink: 0;
+            border: 2px solid rgba(255, 255, 255, 0.95);
+            box-shadow:
+                0 0 0 1px rgba(59, 130, 246, 0.15),
+                0 2px 6px rgba(15, 23, 42, 0.15);
+            transition: box-shadow 0.22s ease, transform 0.22s ease;
+            background: linear-gradient(135deg, #dbeafe 0%, #e0f2fe 100%);
+        }
+
+        .header-ad-info {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            line-height: 1.15;
+        }
+
+        .header-ad-name {
+            font-weight: 800;
+            font-size: 0.75rem;
+            letter-spacing: -0.015em;
+            color: var(--bg-dark);
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: color 0.25s ease;
+        }
+
+        .header-ad-ixtisas {
+            font-size: 0.63rem;
+            font-weight: 600;
+            color: var(--primary);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.14), rgba(14, 165, 233, 0.1));
+            padding: 0.08rem 0.42rem;
+            border-radius: 999px;
+            display: inline-block;
+            align-self: flex-start;
+            margin-top: 0.12rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 130px;
+            border: 1px solid rgba(59, 130, 246, 0.12);
+        }
+
+        .header-ad-badge-pulse {
+            position: absolute;
+            top: 0.3rem;
+            right: 0.3rem;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.7);
+            animation: ad-pulse 2s infinite;
+            z-index: 3;
+        }
+
+        @keyframes ad-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.55); }
+            70% { box-shadow: 0 0 0 6px rgba(14, 165, 233, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }
+        }
+
+        .header-ad-divider {
+            width: 1px;
+            height: 28px;
+            background: linear-gradient(180deg,
+                transparent 0%,
+                rgba(148, 163, 184, 0.4) 50%,
+                transparent 100%);
+            flex-shrink: 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header-ad-widget-icon {
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 0.5rem;
+            background: var(--header-gradient);
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            box-shadow:
+                0 2px 8px rgba(30, 58, 138, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.25);
+            flex-shrink: 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .related-ads-section {
+            width: 100%;
+            position: relative;
+        }
+
+        .related-ads-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            padding: 0 0.25rem 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .related-ads-flow {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: stretch;
+            width: 100%;
+        }
+
+        .related-ads-flow-upper {
+            gap: 1.1rem;
+        }
+
+        .related-ads-flow-lower {
+            gap: 1.25rem;
+        }
+
+        .related-ad-wrap {
+            display: flex;
+            flex: 1 1 340px;
+            min-width: 320px;
+            max-width: 480px;
+        }
+
+        .related-ads-flow-lower .related-ad-wrap {
+            flex: 1 1 360px;
+            min-width: 330px;
+            max-width: 100%;
+        }
+
+        @media (max-width: 1199.98px) {
+            .related-ad-wrap {
+                flex: 1 1 320px;
+                min-width: 300px;
+            }
+            .related-ads-flow-upper { gap: 1rem; }
+            .related-ads-flow-lower { gap: 1.1rem; }
+        }
+
+        @media (max-width: 899.98px) {
+            .related-ad-wrap,
+            .related-ads-flow-lower .related-ad-wrap {
+                flex: 1 1 100%;
+                min-width: 100%;
+                max-width: 100%;
+            }
+            .related-ads-flow-upper { gap: 0.95rem; }
+            .related-ads-flow-lower { gap: 1rem; }
+        }
+
+        @media (max-width: 575.98px) {
+            .related-ad-wrap,
+            .related-ads-flow-lower .related-ad-wrap {
+                flex: 1 1 100%;
+                min-width: 100%;
+                max-width: 100%;
+            }
+            .related-ads-flow-upper { gap: 0.85rem; }
+            .related-ads-flow-lower { gap: 0.9rem; }
+        }
+
+        .related-ad-card {
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
+            background: linear-gradient(155deg,
+                rgba(255, 255, 255, 0.96) 0%,
+                rgba(240, 247, 255, 0.9) 55%,
+                rgba(226, 239, 255, 0.82) 100%);
+            border: 1px solid rgba(147, 197, 253, 0.45) !important;
+            border-radius: 18px !important;
+            overflow: hidden;
+            position: relative;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            height: 100%;
+            width: 100%;
+            contain: layout paint;
+            transform: translateZ(0);
+            will-change: transform;
+        }
+
+        .related-ad-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3.5px;
+            background: linear-gradient(90deg,
+                rgba(30, 58, 138, 0.12) 0%,
+                rgba(59, 130, 246, 0.75) 25%,
+                rgba(14, 165, 233, 0.9) 55%,
+                rgba(59, 130, 246, 0.65) 80%,
+                rgba(30, 58, 138, 0.12) 100%);
+            opacity: 0.6;
+            transition: opacity 0.25s ease, height 0.25s ease;
+        }
+
+        .related-ad-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(59, 130, 246, 0.55) !important;
+            box-shadow:
+                0 0 0 3px rgba(59, 130, 246, 0.12),
+                0 12px 28px -10px rgba(30, 58, 138, 0.30),
+                0 6px 14px -4px rgba(15, 23, 42, 0.10) !important;
+            background: linear-gradient(155deg,
+                rgba(255, 255, 255, 0.98) 0%,
+                rgba(239, 246, 255, 0.95) 55%,
+                rgba(219, 234, 254, 0.92) 100%);
+        }
+
+        .related-ad-card:hover::before {
+            opacity: 1;
+            height: 4px;
+        }
+
+        .related-ad-card:hover::after {
+            opacity: 1;
+        }
+
+        .related-ad-card .related-ad-body {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding: 1.5rem 1.35rem 1.2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .related-ad-top-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 1.05rem;
+            margin-bottom: 0.95rem;
+        }
+
+        .related-ad-portrait {
+            width: 82px;
+            height: 82px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 3px solid rgba(191, 219, 254, 0.9);
+            box-shadow:
+                0 4px 14px rgba(15, 23, 42, 0.14),
+                0 0 0 2px rgba(255, 255, 255, 0.75);
+            transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                        box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                        border-color 0.35s ease;
+        }
+
+        .related-ad-card:hover .related-ad-portrait {
+            transform: scale(1.08);
+            border-color: rgba(59, 130, 246, 0.65);
+            box-shadow:
+                0 0 0 4px rgba(59, 130, 246, 0.22),
+                0 9px 22px rgba(30, 58, 138, 0.28),
+                0 0 0 2px rgba(255, 255, 255, 0.92);
+        }
+
+        .related-ad-identity {
+            flex: 1 1 auto;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .related-ad-fullname {
+            margin: 0;
+            font-weight: 750;
+            font-size: 1.15rem;
+            line-height: 1.25;
+            color: #0f172a;
+            letter-spacing: -0.01em;
+            word-break: break-word;
+        }
+
+        .detail-specialty-badge {
+            display: inline-block;
+            padding: 0.75rem 1.6rem;
+            border-radius: 14px;
+            background: linear-gradient(135deg,
+                rgba(30, 58, 138, 0.08) 0%,
+                rgba(59, 130, 246, 0.14) 100%);
+            border: 1.5px solid rgba(59, 130, 246, 0.35);
+            color: #1e3a8a;
+            font-size: 1.05rem;
+            font-weight: 700;
+            letter-spacing: -0.005em;
+            word-break: break-word;
+            line-height: 1.35;
+            box-shadow:
+                0 2px 6px rgba(59, 130, 246, 0.10),
+                inset 0 1px 0 rgba(255, 255, 255, 0.7);
+            width: fit-content;
+            max-width: 100%;
+            transition: background-color 0.22s ease, border-color 0.22s ease, color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
+        }
+
+        .related-ad-specialty-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.7rem 1.25rem;
+            border-radius: 12px;
+            background: #eff6ff;
+            border: 1.5px solid rgba(59, 130, 246, 0.3);
+            color: #1e3a8a;
+            font-size: 0.96rem;
+            font-weight: 700;
+            letter-spacing: -0.005em;
+            word-break: break-word;
+            line-height: 1.4;
+            box-shadow:
+                0 2px 5px rgba(59, 130, 246, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            width: fit-content;
+            max-width: 100%;
+            transition: background-color 0.22s ease, border-color 0.22s ease, color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
+        }
+
+        .related-ad-card:hover .related-ad-specialty-pill {
+            background: #dbeafe;
+            border-color: rgba(59, 130, 246, 0.55);
+            color: #172554;
+            box-shadow:
+                0 4px 12px rgba(59, 130, 246, 0.16),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            transform: translateY(-1px);
+        }
+
+        .list-ad-specialty-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.68rem 1.2rem;
+            border-radius: 12px;
+            background: #eff6ff;
+            border: 1.5px solid rgba(59, 130, 246, 0.3);
+            color: #1e3a8a;
+            font-size: 0.94rem;
+            font-weight: 700;
+            letter-spacing: -0.005em;
+            word-break: break-word;
+            line-height: 1.4;
+            box-shadow:
+                0 2px 5px rgba(59, 130, 246, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            width: fit-content;
+            max-width: 100%;
+            transition: background-color 0.22s ease, border-color 0.22s ease, color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
+        }
+
+        .reklam-card:hover .list-ad-specialty-pill {
+            background: #dbeafe;
+            border-color: rgba(59, 130, 246, 0.55);
+            color: #172554;
+            box-shadow:
+                0 4px 12px rgba(59, 130, 246, 0.16),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            transform: translateY(-1px);
+        }
+
+        .related-ad-meta-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.6rem;
+            margin-top: auto;
+            padding-top: 0.75rem;
+            border-top: 1px dashed rgba(148, 163, 184, 0.28);
+        }
+
+        .related-ad-date {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: #64748b;
+            font-size: 0.82rem;
+            font-weight: 550;
+        }
+
+        .related-ad-date i {
+            color: rgba(59, 130, 246, 0.72);
+            font-size: 0.9rem;
+        }
+
+        .related-ad-arrow {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg,
+                rgba(59, 130, 246, 0.14) 0%,
+                rgba(14, 165, 233, 0.18) 100%);
+            color: #1e3a8a;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+            opacity: 0.78;
+            transition: background-color 0.25s ease, color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease;
+        }
+
+        .related-ad-card:hover .related-ad-arrow {
+            opacity: 1;
+            background: linear-gradient(135deg, #1e3a8a 0%, #0ea5e9 100%);
+            color: #ffffff;
+            transform: translateX(3px);
+            box-shadow: 0 4px 10px rgba(30, 58, 138, 0.28);
+        }
+    </style>
+</head>
+<body>
+    {% if is_teacher or is_student or is_public_page %}
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top" role="navigation" aria-label="Əsas naviqasiya">
+        <div class="container-fluid d-flex align-items-center justify-content-between gap-2">
+            <div class="d-flex align-items-center gap-2 flex-grow-1 min-w-0">
+                {% if is_teacher or is_student %}
+                <a class="navbar-brand d-flex align-items-center gap-2 me-2 text-truncate" href="{% url 'core:dashboard' %}">
+                    <i class="bi bi-journal-text fs-3" style="-webkit-text-fill-color: initial;"></i>
+                    <span>TəlimQeyd</span>
+                </a>
+                {% else %}
+                <a class="navbar-brand d-flex align-items-center gap-2 me-2 text-truncate" href="{% url 'core:landing_page' %}">
+                    <i class="bi bi-journal-text fs-3" style="-webkit-text-fill-color: initial;"></i>
+                    <span>TəlimQeyd</span>
+                </a>
+                {% endif %}
+            </div>
+
+            {% if is_teacher or is_student %}
+            <button
+                class="navbar-toggler flex-shrink-0"
+                type="button"
+                data-bs-toggle="offcanvas"
+                data-bs-target="#sidebarOffcanvas"
+                aria-controls="sidebarOffcanvas"
+                aria-expanded="false"
+                aria-label="Naviqasiyanı aç"
+            >
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            {% else %}
+            <button
+                class="navbar-toggler flex-shrink-0"
+                type="button"
+                data-bs-toggle="offcanvas"
+                data-bs-target="#sidebarOffcanvas"
+                aria-controls="sidebarOffcanvas"
+                aria-expanded="false"
+                aria-label="Naviqasiyanı aç"
+            >
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            {% endif %}
+
+            <div class="d-none d-lg-flex align-items-center me-2">
+                {% if not is_teacher and not is_student %}
+                <a class="nav-link {% if request.resolver_match.url_name == 'landing_page' %}active{% endif %}"
+                   href="{% url 'core:landing_page' %}"
+                   hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                    <i class="bi bi-house-fill me-1"></i>Ana səhifə
+                </a>
+                {% endif %}
+                <a class="nav-link {% if 'reklam' in request.resolver_match.url_name %}active{% endif %}"
+                   href="{% url 'core:reklam_list' %}"
+                   hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                    <i class="bi bi-megaphone-fill me-1"></i>Reklamlar
+                </a>
+            </div>
+
+            <div class="d-flex align-items-center ms-2 ms-lg-3 flex-shrink-0" role="list">
+                {% if is_teacher or is_student %}
+                <div class="nav-item dropdown" role="listitem">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 p-1 p-lg-2" href="#" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false" aria-label="İstifadəçi menyusu">
+                        <span class="avatar">{{ current_user_display|slice:":1"|upper }}</span>
+                        <span class="d-none d-lg-inline fw-medium">{{ current_user_display }}</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg" style="min-width: 220px;">
+                        <li>
+                            <div class="px-3 py-2 border-bottom mb-1">
+                                <div class="fw-bold text-truncate">{{ current_user_display }}</div>
+                                <small class="text-muted">
+                                    {% if is_admin %}İnzibatçı{% elif is_course_admin %}Kurs-inzibatçısı{% elif is_teacher %}Müəllim{% elif is_student %}Şagird{% else %}İstifadəçi{% endif %}
+                                </small>
+                            </div>
+                        </li>
+                        {% if is_teacher %}
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'core:teacher_update' request.user.pk %}">
+                                <i class="bi bi-pencil-square"></i>
+                                <span>Profili redaktə et</span>
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider mx-2 my-1"></li>
+                        {% endif %}
+                        <li>
+                            {% if is_student %}
+                            <a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="{% url 'core:student_logout' %}">
+                                <i class="bi bi-box-arrow-right"></i>
+                                <span>Hesabdan çıx</span>
+                            </a>
+                            {% else %}
+                            <a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="{% url 'core:logout' %}">
+                                <i class="bi bi-box-arrow-right"></i>
+                                <span>Hesabdan çıx</span>
+                            </a>
+                            {% endif %}
+                        </li>
+                    </ul>
+                </div>
+                {% else %}
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{% url 'core:student_login' %}" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1">
+                        <i class="bi bi-person-circle"></i>
+                        <span class="d-none d-sm-inline">Şagird girişi</span>
+                    </a>
+                    <a href="{% url 'core:login' %}" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        <span class="d-none d-sm-inline">Daxil ol</span>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row g-4">
+            {% if is_teacher or is_student %}
+            <aside class="col-lg-3 col-xl-2 d-none d-lg-block sidebar-col">
+                <div class="sidebar-wrapper">
+                    <div class="sidebar-title">Əsas</div>
+                    <a href="{% url 'core:dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                        <i class="bi bi-grid-fill"></i>
+                        <span>İdarə paneli</span>
+                    </a>
+                    {% if is_teacher %}
+                    <a href="{% url 'core:teacher_update' request.user.pk %}" class="sidebar-link {% if request.resolver_match.url_name == 'teacher_update' and request.user.pk == user.pk %}active{% endif %}" hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                        <i class="bi bi-person-gear"></i>
+                        <span>Profili redaktə et</span>
+                    </a>
+                    {% endif %}
+
+                    {% if is_admin or is_course_admin %}
+                    <div class="sidebar-title mt-3">İdarəetmə</div>
+                    <a href="{% url 'core:teacher_list' %}" class="sidebar-link {% if 'teacher' in request.resolver_match.url_name %}active{% endif %}" hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                        <i class="bi bi-person-badge-fill"></i>
+                        <span>Müəllimlər</span>
+                    </a>
+                    {% endif %}
+
+                    <div class="sidebar-title mt-3">Təlim</div>
+                    <a href="{% url 'core:class_list' %}" class="sidebar-link {% if 'class' in request.resolver_match.url_name %}active{% endif %}" hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                        <i class="bi bi-mortarboard-fill"></i>
+                        <span>Siniflər</span>
+                    </a>
+                    {% if is_teacher %}
+                    <a href="{% url 'core:roster_list' %}" class="sidebar-link {% if 'roster' in request.resolver_match.url_name %}active{% endif %}" hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                        <i class="bi bi-list-check"></i>
+                        <span>Qeydiyyat cədvəli</span>
+                    </a>
+                    <a href="{% url 'core:student_list' %}" class="sidebar-link {% if 'student_list' in request.resolver_match.url_name or 'student_update' in request.resolver_match.url_name or 'student_delete' in request.resolver_match.url_name %}active{% endif %}" hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Şagirdlər</span>
+                    </a>
+                    <a href="{% url 'core:student_account_list' %}" class="sidebar-link {% if 'student_account' in request.resolver_match.url_name %}active{% endif %}" hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                        <i class="bi bi-key-fill"></i>
+                        <span>İstifadəçi adları</span>
+                    </a>
+                    <a href="{% url 'core:new_student_create' %}" class="sidebar-link {% if 'new_student' in request.resolver_match.url_name %}active{% endif %}" hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                        <i class="bi bi-person-plus-fill"></i>
+                        <span>Yeni şagird</span>
+                    </a>
+                    <a href="{% url 'core:student_enroll' %}" class="sidebar-link {% if 'student_enroll' in request.resolver_match.url_name %}active{% endif %}" hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                        <i class="bi bi-person-check-fill"></i>
+                        <span>Şagird daxil edin</span>
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'core:lesson_list' %}" class="sidebar-link {% if 'lesson' in request.resolver_match.url_name %}active{% endif %}" hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                        <i class="bi bi-calendar2-check-fill"></i>
+                        <span>Dərslər</span>
+                    </a>
+                    <a href="{% url 'core:reklam_list' %}" class="sidebar-link {% if 'reklam' in request.resolver_match.url_name %}active{% endif %}" hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                        <i class="bi bi-megaphone-fill"></i>
+                        <span>Reklamlar</span>
+                    </a>
+
+                    {% if is_admin %}
+                    <div class="sidebar-title mt-3">Sistem</div>
+                    <a href="/admin/" class="sidebar-link" target="_blank">
+                        <i class="bi bi-gear-fill"></i>
+                        <span>Sistem idarəsi</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </aside>
+            {% endif %}
+
+            <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarOffcanvas" aria-labelledby="sidebarOffcanvasLabel">
+                <div class="offcanvas-header border-bottom">
+                    <h5 class="offcanvas-title navbar-brand" id="sidebarOffcanvasLabel">
+                        <i class="bi bi-journal-text me-2"></i>TəlimQeyd
+                    </h5>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="offcanvas" aria-label="Bağla"></button>
+                </div>
+                <div class="offcanvas-body p-3">
+                    {% if is_teacher or is_student %}
+                    <div class="mb-4 p-3 bg-primary bg-opacity-10 rounded-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="avatar avatar-lg">{{ current_user_display|slice:":1"|upper }}</span>
+                            <div>
+                                <h6 class="mb-0 fw-bold">{{ current_user_display }}</h6>
+                                <small class="text-muted">
+                                    {% if is_admin %}İnzibatçı{% elif is_course_admin %}Kurs-inzibatçısı{% elif is_teacher %}Müəllim{% elif is_student %}Şagird{% else %}İstifadəçi{% endif %}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sidebar-title">Əsas</div>
+                    <a href="{% url 'core:dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" data-bs-dismiss="offcanvas" hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                        <i class="bi bi-grid-fill"></i>
+                        <span>İdarə paneli</span>
+                    </a>
+                    {% if is_teacher %}
+                    <a href="{% url 'core:teacher_update' request.user.pk %}" class="sidebar-link {% if request.resolver_match.url_name == 'teacher_update' and request.user.pk == user.pk %}active{% endif %}" data-bs-dismiss="offcanvas" hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                        <i class="bi bi-person-gear"></i>
+                        <span>Profili redaktə et</span>
+                    </a>
+                    {% endif %}
+                    {% if is_admin or is_course_admin %}
+                    <div class="sidebar-title mt-3">İdarəetmə</div>
+                    <a href="{% url 'core:teacher_list' %}" class="sidebar-link {% if 'teacher' in request.resolver_match.url_name %}active{% endif %}" data-bs-dismiss="offcanvas" hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                        <i class="bi bi-person-badge-fill"></i>
+                        <span>Müəllimlər</span>
+                    </a>
+                    {% endif %}
+                    <div class="sidebar-title mt-3">Təlim</div>
+                    <a href="{% url 'core:class_list' %}" class="sidebar-link {% if 'class' in request.resolver_match.url_name %}active{% endif %}" data-bs-dismiss="offcanvas" hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                        <i class="bi bi-mortarboard-fill"></i>
+                        <span>Siniflər</span>
+                    </a>
+                    {% if is_teacher %}
+                    <a href="{% url 'core:roster_list' %}" class="sidebar-link {% if 'roster' in request.resolver_match.url_name %}active{% endif %}" data-bs-dismiss="offcanvas" hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                        <i class="bi bi-list-check"></i>
+                        <span>Qeydiyyat cədvəli</span>
+                    </a>
+                    <a href="{% url 'core:student_list' %}" class="sidebar-link {% if 'student_list' in request.resolver_match.url_name or 'student_update' in request.resolver_match.url_name or 'student_delete' in request.resolver_match.url_name %}active{% endif %}" data-bs-dismiss="offcanvas" hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Şagirdlər</span>
+                    </a>
+                    <a href="{% url 'core:student_account_list' %}" class="sidebar-link {% if 'student_account' in request.resolver_match.url_name %}active{% endif %}" data-bs-dismiss="offcanvas" hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                        <i class="bi bi-key-fill"></i>
+                        <span>İstifadəçi adları</span>
+                    </a>
+                    <a href="{% url 'core:new_student_create' %}" class="sidebar-link {% if 'new_student' in request.resolver_match.url_name %}active{% endif %}" data-bs-dismiss="offcanvas" hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                        <i class="bi bi-person-plus-fill"></i>
+                        <span>Yeni şagird</span>
+                    </a>
+                    <a href="{% url 'core:student_enroll' %}" class="sidebar-link {% if 'student_enroll' in request.resolver_match.url_name %}active{% endif %}" data-bs-dismiss="offcanvas" hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                        <i class="bi bi-person-check-fill"></i>
+                        <span>Şagird daxil edin</span>
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'core:lesson_list' %}" class="sidebar-link {% if 'lesson' in request.resolver_match.url_name %}active{% endif %}" data-bs-dismiss="offcanvas" hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                        <i class="bi bi-calendar2-check-fill"></i>
+                        <span>Dərslər</span>
+                    </a>
+                    <a href="{% url 'core:reklam_list' %}" class="sidebar-link {% if 'reklam' in request.resolver_match.url_name %}active{% endif %}" data-bs-dismiss="offcanvas" hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                        <i class="bi bi-megaphone-fill"></i>
+                        <span>Reklamlar</span>
+                    </a>
+
+                    {% if is_admin %}
+                    <div class="sidebar-title mt-3">Sistem</div>
+                    <a href="/admin/" class="sidebar-link" target="_blank">
+                        <i class="bi bi-gear-fill"></i>
+                        <span>Sistem idarəsi</span>
+                    </a>
+                    {% endif %}
+                    <hr class="my-4">
+                    {% if is_student %}
+                    <a href="{% url 'core:student_logout' %}" class="sidebar-link text-danger">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Çıxış</span>
+                    </a>
+                    {% else %}
+                    <a href="{% url 'core:logout' %}" class="sidebar-link text-danger">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Çıxış</span>
+                    </a>
+                    {% endif %}
+                    {% else %}
+                    <div class="mb-4 p-3 rounded-3" style="background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(14,165,233,0.08));">
+                        <div class="d-flex flex-column gap-3">
+                            <h6 class="mb-0 fw-bold">Xoş gəldiniz!</h6>
+                            <p class="text-muted small mb-0">Reklamlara baxın və ya hesabınıza daxil olun.</p>
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'core:student_login' %}" class="btn btn-outline-primary btn-sm flex-grow-1">
+                                    <i class="bi bi-person-circle me-1"></i>Şagird
+                                </a>
+                                <a href="{% url 'core:login' %}" class="btn btn-primary btn-sm flex-grow-1">
+                                    <i class="bi bi-box-arrow-in-right me-1"></i>Daxil ol
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sidebar-title">Əsas</div>
+                    <a href="{% url 'core:landing_page' %}" class="sidebar-link {% if request.resolver_match.url_name == 'landing_page' %}active{% endif %}" data-bs-dismiss="offcanvas" hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                        <i class="bi bi-house-fill"></i>
+                        <span>Ana səhifə</span>
+                    </a>
+                    <a href="{% url 'core:reklam_list' %}" class="sidebar-link {% if 'reklam' in request.resolver_match.url_name %}active{% endif %}" data-bs-dismiss="offcanvas" hx-target="#main-content" hx-swap="innerHTML" hx-select="#main-content" hx-push-url="true">
+                        <i class="bi bi-megaphone-fill"></i>
+                        <span>Reklamlar</span>
+                    </a>
+
+                    {% endif %}
+                </div>
+            </div>
+
+            <main id="main-content" class="{% if is_teacher or is_student %}col-lg-9 col-xl-10{% else %}col-12{% endif %}">
+                <div class="content-wrapper">
+                    {% if messages %}
+                    <div class="mb-4">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show alert-toast-3d alert-auto-dismiss d-flex align-items-center gap-3" role="alert">
+                            {% if message.tags == 'success' %}<i class="bi bi-check-circle-fill fs-4"></i>{% endif %}
+                            {% if message.tags == 'error' or message.tags == 'danger' %}<i class="bi bi-x-circle-fill fs-4"></i>{% endif %}
+                            {% if message.tags == 'warning' %}<i class="bi bi-exclamation-triangle-fill fs-4"></i>{% endif %}
+                            {% if message.tags == 'info' %}<i class="bi bi-info-circle-fill fs-4"></i>{% endif %}
+                            <div class="flex-grow-1">{{ message }}</div>
+                            <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert" aria-label="Bağla"></button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {% block content %}{% endblock %}
+                </div>
+
+                {% if carousel_reklam_slides %}
+                <section class="carousel-reklam-wrapper" aria-label="Reklam karuseli">
+                    <div class="carousel-section-header">
+                        <h2 class="carousel-section-title">
+                            <i class="bi bi-megaphone-fill"></i>
+                            <span>Müəllim reklamları</span>
+                        </h2>
+                        <a href="{% url 'core:reklam_list' %}" class="btn btn-outline-primary btn-sm btn-carousel-more d-inline-flex align-items-center gap-2">
+                            <span>Ətraflı Bax</span>
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                    <div id="reklamCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5500">
+                        {% if carousel_reklam_slides|length > 1 %}
+                        <div class="carousel-indicators carousel-indicators-reklam">
+                            {% for slide in carousel_reklam_slides %}
+                            <button type="button" data-bs-target="#reklamCarousel" data-bs-slide-to="{{ forloop.counter0 }}"
+                                    {% if forloop.first %}class="active" aria-current="true"{% endif %}
+                                    aria-label="Slayd {{ forloop.counter }}"></button>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <div class="carousel-inner">
+                            {% for slide in carousel_reklam_slides %}
+                            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                <div class="row g-2 carousel-item-wrapper">
+                                    {% for reklam in slide %}
+                                    <div class="col-12 col-md-6 col-lg-4">
+                                        <a href="{% url 'core:reklam_detail' reklam.pk %}" class="carousel-reklam-card">
+                                            <img src="{{ reklam.sekil_url }}" alt="{{ reklam.ad }} {{ reklam.soyad }}" class="carousel-reklam-image"
+                                                 onerror="this.src='https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=professional%20teacher%20portrait%20azerbaijan%20education&image_size=square'">
+                                            <div class="carousel-reklam-info">
+                                                <p class="carousel-reklam-name">{{ reklam.ad }} {{ reklam.soyad }}</p>
+                                                <span class="carousel-reklam-ixtisas">{{ reklam.ixtisas_fenni }}</span>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if carousel_reklam_slides|length > 1 %}
+                        <button class="carousel-control-prev carousel-control-btn" type="button" data-bs-target="#reklamCarousel" data-bs-slide="prev">
+                            <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                            <span class="visually-hidden">Əvvəlki</span>
+                        </button>
+                        <button class="carousel-control-next carousel-control-btn" type="button" data-bs-target="#reklamCarousel" data-bs-slide="next">
+                            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                            <span class="visually-hidden">Növbəti</span>
+                        </button>
+                        {% endif %}
+                    </div>
+                </section>
+                {% endif %}
+            </main>
+        </div>
+    </div>
+
+    {% else %}
+    <main class="flex-grow-1 d-flex align-items-center justify-content-center">
+        {% if messages %}
+        <div class="position-fixed top-0 start-0 end-0 p-3 z-3">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show alert-toast-3d alert-auto-dismiss d-flex align-items-center gap-3 max-w-500 mx-auto" role="alert" style="max-width: 500px;">
+                <i class="bi bi-info-circle-fill fs-4"></i>
+                <div class="flex-grow-1">{{ message }}</div>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert" aria-label="Bağla"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% block auth_content %}{% endblock %}
+    </main>
+    {% endif %}
+
+    <style>
+        .feedback-modal .modal-content {
+            border: none;
+            border-radius: 1.25rem;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: saturate(180%) blur(12px);
+            -webkit-backdrop-filter: saturate(180%) blur(12px);
+            box-shadow:
+                0 32px 64px -20px rgba(15, 23, 42, 0.35),
+                0 0 0 1px rgba(30, 58, 138, 0.12);
+        }
+
+        .feedback-modal .modal-header {
+            background: var(--header-gradient);
+            color: #ffffff;
+            border-top-left-radius: 1.25rem;
+            border-top-right-radius: 1.25rem;
+            border-bottom: none;
+            padding: 1.35rem 1.6rem;
+        }
+
+        .feedback-modal .modal-title {
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+        }
+
+        .feedback-modal .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+
+        .feedback-modal .modal-body {
+            padding: 1.6rem 1.6rem 1rem;
+        }
+
+        .feedback-modal .modal-footer {
+            border-top: 1px solid #e2e8f0;
+            padding: 1rem 1.6rem 1.6rem;
+        }
+
+        .feedback-alert {
+            border-radius: 0.85rem;
+            padding: 0.9rem 1.1rem;
+            margin-bottom: 1rem;
+            border: 1px solid transparent;
+            display: none;
+        }
+
+        .feedback-alert.show {
+            display: block;
+        }
+
+        .feedback-alert.success {
+            background: #ecfdf5;
+            color: #065f46;
+            border-color: #6ee7b7;
+        }
+
+        .feedback-alert.error {
+            background: #fef2f2;
+            color: #991b1b;
+            border-color: #fca5a5;
+        }
+
+        .feedback-counter {
+            display: flex;
+            justify-content: flex-end;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-top: 0.4rem;
+        }
+
+        .feedback-counter.near-limit {
+            color: #ea580c;
+        }
+
+        .feedback-counter.at-limit {
+            color: #dc2626;
+        }
+
+        .spinner-inline {
+            width: 1rem;
+            height: 1rem;
+            border-width: 2px;
+            margin-right: 0.4rem;
+        }
+    </style>
+
+    <div class="modal fade feedback-modal" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="feedbackModalLabel">
+                        <i class="bi bi-chat-heart-fill"></i>
+                        Rəy və Təklif
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Bağla"></button>
+                </div>
+                <form id="feedback-form" method="POST" action="{% url 'core:feedback_submit' %}" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="ajax" value="1">
+                    <div class="modal-body">
+                        <div id="feedbackAlertSuccess" class="feedback-alert success" role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            <span id="feedbackAlertSuccessText"></span>
+                        </div>
+                        <div id="feedbackAlertError" class="feedback-alert error" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <span id="feedbackAlertErrorText">Formada düzəltdirmələr lazımdır. Xahiş olunuz sahələri yoxlayın.</span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_feedback_message" class="form-label fw-semibold">Rəy və Təklif</label>
+                            <textarea name="message" cols="40" rows="6" maxlength="1500" class="form-control" placeholder="Rəy və ya təklifinizi buraya yazın..." required id="id_feedback_message"></textarea>
+                            <div class="feedback-counter" id="feedbackCounter">
+                                <span id="feedbackCount">0</span> / 1500
+                            </div>
+                            <div class="invalid-feedback" id="feedbackMessageError"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-lg"></i> Bağla
+                        </button>
+                        <button type="submit" class="btn btn-primary">Göndər</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="{% static 'js/custom.js' %}" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+            [...tooltipTriggerList].forEach(el => new bootstrap.Tooltip(el));
+
+            const deleteForms = document.querySelectorAll('form[data-confirm]');
+            deleteForms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    if (!confirm(form.dataset.confirm)) {
+                        e.preventDefault();
+                    }
+                });
+            });
+
+            const autoDismiss = document.querySelectorAll('.alert-auto-dismiss');
+            autoDismiss.forEach(alertEl => {
+                const timeoutId = setTimeout(() => {
+                    if (!alertEl.isConnected) return;
+                    alertEl.classList.add('alert-closing');
+                    setTimeout(() => {
+                        const bsAlert = bootstrap.Alert.getOrCreateInstance(alertEl);
+                        bsAlert.close();
+                    }, 350);
+                }, 7000);
+                alertEl.addEventListener('close.bs.alert', function() {
+                    clearTimeout(timeoutId);
+                });
+            });
+
+            const navLinks = document.querySelectorAll('a.sidebar-link, .offcanvas-body a.sidebar-link, .navbar a.nav-link[href], a.dropdown-item[href]');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const href = link.getAttribute('href');
+                    if (!href || href === '#' || href.startsWith('/admin/')) return;
+                    const dismissOffcanvas = link.closest('.offcanvas');
+                    if (dismissOffcanvas) {
+                        const target = link.getAttribute('data-bs-target');
+                        const offcanvasEl = link.closest('.offcanvas');
+                        if (offcanvasEl && href && !href.startsWith('#') && !link.getAttribute('target')) {
+                            e.preventDefault();
+                            const finalHref = href;
+                            const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl);
+                            if (bsOffcanvas) {
+                                offcanvasEl.addEventListener('hidden.bs.offcanvas', function navigateOnce() {
+                                    window.location.href = finalHref;
+                                    offcanvasEl.removeEventListener('hidden.bs.offcanvas', navigateOnce);
+                                }, { once: true });
+                                bsOffcanvas.hide();
+                            } else {
+                                window.location.href = finalHref;
+                            }
+                        }
+                    }
+                });
+            });
+
+            document.querySelectorAll('.navbar-toggler').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    const target = btn.getAttribute('data-bs-target');
+                    if (!target) return;
+                    e.stopPropagation();
+                });
+            });
+
+            function initHeaderAdWidget(widget) {
+                const fragments = Array.from(widget.querySelectorAll('.header-ad-fragment'));
+                if (!fragments.length) return;
+
+                if (fragments.length <= 2) {
+                    fragments.forEach((frag, i) => {
+                        requestAnimationFrame(() => {
+                            setTimeout(() => frag.classList.add('is-visible'), i * 120);
+                        });
+                    });
+                    return;
+                }
+
+                fragments.forEach(frag => frag.style.display = 'none');
+                let pairStart = 0;
+                const FADE_MS = 360;
+                const ROTATE_MS = 6000;
+
+                function showPair(startIdx) {
+                    const pair = [];
+                    for (let i = 0; i < 2; i++) {
+                        const idx = (startIdx + i) % fragments.length;
+                        pair.push(fragments[idx]);
+                    }
+
+                    pair.forEach((frag, i) => {
+                        frag.style.display = 'flex';
+                        frag.classList.remove('is-visible');
+                        requestAnimationFrame(() => {
+                            setTimeout(() => frag.classList.add('is-visible'), i * 80);
+                        });
+                    });
+
+                    setTimeout(() => {
+                        pair.forEach(frag => {
+                            frag.classList.remove('is-visible');
+                        });
+                        setTimeout(() => {
+                            pair.forEach(frag => {
+                                frag.style.display = 'none';
+                            });
+                            pairStart = (pairStart + 2) % fragments.length;
+                            showPair(pairStart);
+                        }, FADE_MS);
+                    }, ROTATE_MS);
+                }
+
+                showPair(pairStart);
+            }
+
+            document.querySelectorAll('.header-ad-widget').forEach(initHeaderAdWidget);
+
+            (function initFeedbackModal() {
+                var form = document.getElementById('feedback-form');
+                var modalEl = document.getElementById('feedbackModal');
+                if (!form || !modalEl) return;
+
+                var submitBtn = document.getElementById('feedbackSubmitBtn');
+                var spinner = document.getElementById('feedbackSpinner');
+                var submitIcon = document.getElementById('feedbackSubmitIcon');
+                var submitText = document.getElementById('feedbackSubmitText');
+                var alertSuccess = document.getElementById('feedbackAlertSuccess');
+                var alertSuccessText = document.getElementById('feedbackAlertSuccessText');
+                var alertError = document.getElementById('feedbackAlertError');
+                var alertErrorText = document.getElementById('feedbackAlertErrorText');
+                var textarea = document.getElementById('id_feedback_message');
+                var countEl = document.getElementById('feedbackCount');
+                var counterEl = document.getElementById('feedbackCounter');
+                var msgErrorEl = document.getElementById('feedbackMessageError');
+
+                function updateCounter() {
+                    if (!textarea || !countEl || !counterEl) return;
+                    var len = textarea.value.length;
+                    countEl.textContent = len;
+                    counterEl.classList.remove('near-limit', 'at-limit');
+                    textarea.classList.remove('is-invalid');
+                    if (msgErrorEl) msgErrorEl.style.display = 'none';
+                    if (len >= 1500) {
+                        counterEl.classList.add('at-limit');
+                    } else if (len >= 1350) {
+                        counterEl.classList.add('near-limit');
+                    }
+                }
+
+                function setLoading(loading) {
+                    submitBtn.disabled = loading;
+                    if (loading) {
+                        spinner.classList.remove('d-none');
+                        submitIcon.classList.add('d-none');
+                        submitText.textContent = 'Göndərilir...';
+                    } else {
+                        spinner.classList.add('d-none');
+                        submitIcon.classList.remove('d-none');
+                        submitText.textContent = 'Göndər';
+                    }
+                }
+
+                function resetAlerts() {
+                    alertSuccess.classList.remove('show');
+                    alertError.classList.remove('show');
+                    if (msgErrorEl) msgErrorEl.style.display = 'none';
+                    if (textarea) textarea.classList.remove('is-invalid');
+                }
+
+                if (textarea) {
+                    textarea.addEventListener('input', updateCounter);
+                    updateCounter();
+                }
+
+                modalEl.addEventListener('hidden.bs.modal', function () {
+                    resetAlerts();
+                    if (form) form.reset();
+                    updateCounter();
+                });
+
+                modalEl.addEventListener('show.bs.modal', function () {
+                    resetAlerts();
+                    updateCounter();
+                });
+
+            })();
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

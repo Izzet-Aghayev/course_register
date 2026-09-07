@@ -1,0 +1,110 @@
+{% extends base_template|default:"base.html" %}
+
+{% block title %}Şagirdi Sil | TəlimQeyd{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <nav aria-label="breadcrumb" class="mb-2">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Ana səhifə</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'core:student_list' %}">Şagirdlər</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Sil</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-md-10 col-lg-8 col-xl-6">
+        <div class="card border-danger" style="border-width: 2px;">
+            <div class="card-header bg-danger bg-opacity-10 border-danger border-bottom-0 px-4 py-4 d-flex align-items-center gap-3">
+                <div class="d-flex align-items-center justify-content-center rounded-3 bg-danger text-white" style="width: 3.5rem; height: 3.5rem;">
+                    <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+                </div>
+                <div>
+                    <h1 class="h4 fw-bold mb-0 text-danger">Silinməni təsdiqləyin</h1>
+                    <p class="text-muted mb-0 small">Bu əməliyyat geri qaytarıla bilməz</p>
+                </div>
+            </div>
+            <div class="card-body p-4 p-sm-5 text-center">
+                {% if student %}
+                {% with student.get_full_name as full_name %}
+                <span class="avatar avatar-lg mx-auto mb-4">{{ full_name|slice:":1"|upper }}</span>
+                <h2 class="h3 fw-bold mb-2">{{ full_name }}</h2>
+                {% endwith %}
+                <p class="text-muted mb-1">
+                    {% if student.classes.all %}
+                    {% for cls in student.classes.all|slice:":3" %}
+                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2 me-1 mb-1">
+                        <i class="bi bi-mortarboard me-1"></i>{{ cls.name }}
+                    </span>
+                    {% endfor %}
+                    {% endif %}
+                </p>
+                <p class="text-muted small mb-0">
+                    <i class="bi bi-calendar3 me-1"></i>Qeydiyyat tarixi: {{ student.created_at|date:"d.m.Y" }}
+                </p>
+                {% elif entry %}
+                <span class="avatar avatar-lg mx-auto mb-4">{{ entry.full_name|slice:":1"|upper }}</span>
+                <h2 class="h3 fw-bold mb-2">{{ entry.full_name }}</h2>
+                <p class="text-muted mb-1">
+                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2 me-1">
+                        <i class="bi bi-mortarboard me-1"></i>{{ entry.current_class.name }}
+                    </span>
+                </p>
+                <p class="text-muted small mb-0">
+                    <i class="bi bi-calendar3 me-1"></i>Qeydiyyat tarixi: {{ entry.created_at|date:"d.m.Y" }}
+                </p>
+                {% endif %}
+                <hr class="my-4">
+                <div class="alert alert-warning bg-warning bg-opacity-10 border-0 text-start">
+                    <div class="d-flex align-items-start gap-3">
+                        <i class="bi bi-info-circle-fill text-warning fs-4"></i>
+                        <div>
+                            <strong class="d-block mb-1">Bu qeydiyyatın silinməsi həm də:</strong>
+                            <ul class="mb-0 ps-3 text-muted">
+                                {% if student %}
+                                <li>Şagirdi <strong>{{ student.classes.all|length }}</strong> sinifdən daimi siləcək</li>
+                                <li>Şagirdin bütün davamiyyət və qiymətləndirmə qeydlərini siləcək</li>
+                                {% elif entry %}
+                                <li>Qeydiyyatı <strong>{{ entry.current_class.name }}</strong> sinifindən daimi siləcək</li>
+                                <li>Əlaqəli dərs davamiyyət qeydlərini siləcək</li>
+                                {% endif %}
+                                <li>Bu əməliyyat geri qaytarıla bilməz</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                {% if is_teacher %}
+                <form method="post" class="mt-4 d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger px-5 py-2">
+                        <i class="bi bi-trash-fill me-2"></i>Bəli, sil
+                    </button>
+                    {% if entry %}
+                    <a href="{% url 'core:roster_list' %}" class="btn btn-outline-secondary px-5 py-2">
+                        <i class="bi bi-x-lg me-2"></i>Ləğv et
+                    </a>
+                    {% else %}
+                    <a href="{% url 'core:student_list' %}" class="btn btn-outline-secondary px-5 py-2">
+                        <i class="bi bi-x-lg me-2"></i>Ləğv et
+                    </a>
+                    {% endif %}
+                </form>
+                {% else %}
+                <div class="mt-4">
+                    {% if entry %}
+                    <a href="{% url 'core:roster_list' %}" class="btn btn-outline-secondary px-5 py-2">
+                        <i class="bi bi-x-lg me-2"></i>Ləğv et
+                    </a>
+                    {% else %}
+                    <a href="{% url 'core:student_list' %}" class="btn btn-outline-secondary px-5 py-2">
+                        <i class="bi bi-x-lg me-2"></i>Ləğv et
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

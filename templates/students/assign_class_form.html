@@ -1,0 +1,130 @@
+{% extends base_template|default:"base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Şagirdi sinifə təyin et | TəlimQeyd{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <nav aria-label="breadcrumb" class="mb-2">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Ana səhifə</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'core:student_account_list' %}">İstifadəçi adları</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Sinifə təyin et</li>
+        </ol>
+    </nav>
+    <h1>Şagirdi sinifə təyin et</h1>
+    <p>Aşağıdakı şagird üçün hədəf sinif seçin və təsdiqləyin.</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10 col-xl-8">
+        <div class="card glass-card rounded-3 shadow-3d mb-4">
+            <div class="card-header bg-white border-bottom px-4 py-3" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(16, 185, 129, 0.05));">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="d-flex align-items-center justify-content-center rounded-3" style="width: 3rem; height: 3rem; background: linear-gradient(135deg, #1e3a8a, #0ea5e9); box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);">
+                        <i class="bi bi-person-badge text-white fs-5"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h3 class="h5 fw-bold mb-0">{{ student.get_full_name }}</h3>
+                        <small class="text-muted">
+                            <i class="bi bi-person-circle me-1"></i>@{{ student.username }}
+                        </small>
+                    </div>
+                    <div class="flex-shrink-0">
+                        {% if student.activity_status %}
+                        <span class="badge bg-success bg-opacity-15 text-success rounded-pill px-3 py-2">
+                            <i class="bi bi-check-circle-fill me-1"></i>Aktiv
+                        </span>
+                        {% else %}
+                        <span class="badge bg-warning bg-opacity-15 text-warning rounded-pill px-3 py-2">
+                            <i class="bi bi-x-circle-fill me-1"></i>Deaktiv
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="card-body px-4 py-3">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <div class="d-flex flex-column gap-1">
+                            <span class="small text-muted">
+                                <i class="bi bi-person me-1"></i>Ad
+                            </span>
+                            <span class="fw-semibold">{{ student.firstname }}</span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="d-flex flex-column gap-1">
+                            <span class="small text-muted">
+                                <i class="bi bi-person me-1"></i>Soyad
+                            </span>
+                            <span class="fw-semibold">{{ student.lastname }}</span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="d-flex flex-column gap-1">
+                            <span class="small text-muted">
+                                <i class="bi bi-key me-1"></i>Şifrə
+                            </span>
+                            <code class="bg-light px-2 py-1 rounded small border d-inline-block">{{ student.password }}</code>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="d-flex flex-column gap-1">
+                            <span class="small text-muted">
+                                <i class="bi bi-mortarboard me-1"></i>Mövcud siniflər
+                            </span>
+                            {% if student.classes.all %}
+                            <span class="fw-semibold">
+                                {% for cls in student.classes.all %}
+                                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2 py-1 me-1 mb-1">{{ cls.name }}</span>
+                                {% endfor %}
+                            </span>
+                            {% else %}
+                            <span class="text-muted fst-italic">Sinfi mövcud deyil</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card glass-card rounded-3 shadow-3d">
+            <div class="card-header bg-white border-bottom px-4 py-3" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(14, 165, 233, 0.05));">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="d-flex align-items-center justify-content-center rounded-3" style="width: 3rem; height: 3rem; background: linear-gradient(135deg, #10b981, #0ea5e9); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+                        <i class="bi bi-mortarboard-fill text-white fs-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="h5 fw-bold mb-0">Hədəf Sinif Seçimi</h3>
+                        <small class="text-muted">Şagirdin təyin olunmasını istədiyiniz sinifi seçin</small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger py-2 px-3 small mb-4">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+                {% if form.target_class.errors %}
+                <div class="alert alert-danger py-2 px-3 small mb-4">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    {{ form.target_class.errors }}
+                </div>
+                {% endif %}
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    {% crispy form %}
+                    <div class="d-flex flex-column flex-sm-row gap-3 mt-4 pt-4 border-top">
+                        <a href="{% url 'core:student_account_list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Siyahıya qayıt
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

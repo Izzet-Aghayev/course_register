@@ -1,0 +1,68 @@
+{% extends base_template|default:"base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ action }} Sinif | TəlimQeyd{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <nav aria-label="breadcrumb" class="mb-2">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Ana səhifə</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'core:class_list' %}">Siniflər</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ action }}</li>
+        </ol>
+    </nav>
+    <h1>{{ action }} Sinif</h1>
+    <p>{% if action == 'Əlavə et' %}Yeni sinif yaradın və müəllim təyin edin.{% else %}Sinif məlumatlarını yeniləyin.{% endif %}</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10 col-xl-8">
+        <div class="card">
+            <div class="card-header bg-white border-bottom px-4 py-3">
+                <h3 class="h5 fw-bold mb-0">
+                    <i class="bi bi-mortarboard-fill me-2" style="color: var(--primary);"></i>
+                    Sinif Məlumatları
+                </h3>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-12 col-md-12">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">Sinif adı *</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                            <div class="text-danger small mt-1">{{ form.name.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">Məsələn: "10-cu sinif - A", "Riyaziyyat Əlavə", "Fənn Laboratoriya 3"</div>
+                        </div>
+                        <div class="col-12 col-md-12">
+                            {% if form.teacher.field.widget.input_type != 'hidden' %}
+                            <label for="{{ form.teacher.id_for_label }}" class="form-label">Təyin olunmuş müəllim *</label>
+                            {{ form.teacher }}
+                            {% if form.teacher.errors %}
+                            <div class="text-danger small mt-1">{{ form.teacher.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">Bu sinifi və şagirdlərini idarə edəcək müəllimi seçin. Yalnız Müəllim vəzifəli istifadəçilər siyahıya alınır.</div>
+                            {% else %}
+                            {{ form.teacher }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="d-flex flex-column flex-sm-row gap-3 mt-5">
+                        {% if is_teacher %}
+                        <button type="submit" class="btn btn-primary flex-sm-grow-0 flex-sm-1 order-1 order-sm-2">
+                            <i class="bi bi-check-lg me-2"></i>Yadda saxla
+                        </button>
+                        {% endif %}
+                        <a href="{% url 'core:class_list' %}" class="btn btn-outline-secondary flex-sm-grow-0 flex-sm-1 order-2 order-sm-1">
+                            <i class="bi bi-arrow-left me-2"></i>Siyahıya qayıt
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

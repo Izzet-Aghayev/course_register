@@ -1,0 +1,182 @@
+{% extends base_template|default:"base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if is_self_teacher %}Profilimi Redaktə Et{% else %}{{ action }} Müəllim{% endif %} | TəlimQeyd{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <nav aria-label="breadcrumb" class="mb-2">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Ana səhifə</a></li>
+            {% if not is_self_teacher %}
+            <li class="breadcrumb-item"><a href="{% url 'core:teacher_list' %}">Müəllimlər</a></li>
+            {% endif %}
+            <li class="breadcrumb-item active" aria-current="page">{% if is_self_teacher %}Profil{% else %}{{ action }}{% endif %}</li>
+        </ol>
+    </nav>
+    <h1>{% if is_self_teacher %}Profilimi Redaktə Et{% else %}{{ action }} Müəllim{% endif %}</h1>
+    <p>{% if is_self_teacher %}Şəxsi məlumatlarınızı və dərs linkinizi yeniləyin.{% elif action == 'Əlavə et' %}Yeni müəllim hesabını qeydiyyatdan keçirin.{% else %}Müəllim məlumatlarını yeniləyin.{% endif %}</p>
+</div>
+
+{% if is_self_teacher %}
+<div class="alert alert-info d-flex align-items-start gap-3 mb-4" role="alert">
+    <i class="bi bi-info-circle-fill fs-5 mt-1 flex-shrink-0"></i>
+    <div>
+        <strong>Google Meet tövsiyəsi:</strong>
+        Dərslərin onlayn keçirilməsi üçün öz profilinizdəki link hissəsinə sabit "Google Meet" görüş linki yerləşdirməyiniz tövsiyə olunur.
+    </div>
+</div>
+{% endif %}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10 col-xl-8">
+        <div class="card">
+            <div class="card-header bg-white border-bottom px-4 py-3">
+            <h3 class="h5 fw-bold mb-0">
+                <i class="bi bi-person-badge-fill me-2" style="color: var(--primary);"></i>
+                {% if is_self_teacher %}Şəxsi Məlumatlarım{% else %}Müəllim Məlumatları{% endif %}
+            </h3>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    {% if is_self_teacher %}
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.first_name.id_for_label }}" class="form-label">Ad *</label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                            <div class="text-danger small mt-1">{{ form.first_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.last_name.id_for_label }}" class="form-label">Soyad *</label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                            <div class="text-danger small mt-1">{{ form.last_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.subject.id_for_label }}" class="form-label">Fənn *</label>
+                            {{ form.subject }}
+                            {% if form.subject.errors %}
+                            <div class="text-danger small mt-1">{{ form.subject.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.lesson_link.id_for_label }}" class="form-label">Xüsusi Dərs Linki</label>
+                            {{ form.lesson_link }}
+                            {% if form.lesson_link.errors %}
+                            <div class="text-danger small mt-1">{{ form.lesson_link.errors }}</div>
+                            {% endif %}
+                            <div class="form-text small text-muted mt-1">
+                                <i class="bi bi-link-45deg me-1"></i>
+                                Dərsləri keçəcəyiniz sabit Google Meet və ya digər görüş linkinizi yazın.
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.username.id_for_label }}" class="form-label">İstifadəçi adı *</label>
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                            <div class="text-danger small mt-1">{{ form.username.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">E-poçt *</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                            <div class="text-danger small mt-1">{{ form.email.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.first_name.id_for_label }}" class="form-label">Ad *</label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                            <div class="text-danger small mt-1">{{ form.first_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.last_name.id_for_label }}" class="form-label">Soyad *</label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                            <div class="text-danger small mt-1">{{ form.last_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.staff.id_for_label }}" class="form-label">Vəzifə *</label>
+                            {{ form.staff }}
+                            {% if form.staff.errors %}
+                            <div class="text-danger small mt-1">{{ form.staff.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.subject.id_for_label }}" class="form-label">Fənn *</label>
+                            {{ form.subject }}
+                            {% if form.subject.errors %}
+                            <div class="text-danger small mt-1">{{ form.subject.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.reklam_icazesi.id_for_label }}" class="form-label">Reklam icazəsi *</label>
+                            {{ form.reklam_icazesi }}
+                            {% if form.reklam_icazesi.errors %}
+                            <div class="text-danger small mt-1">{{ form.reklam_icazesi.errors }}</div>
+                            {% endif %}
+                            <div class="form-text small text-muted mt-1">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Default: 1 reklam limiti · Limitsiz: Sınırsız · Qadağan edilib: Reklam yerləşdirə bilməz
+                            </div>
+                        </div>
+                        {% if form.password1 and form.password2 %}
+                        <div class="col-12">
+                            <hr class="my-3">
+                            <h6 class="fw-bold mb-3">Hesab məlumatları</h6>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.password1.id_for_label }}" class="form-label">Şifrə *</label>
+                            {{ form.password1 }}
+                            {% if form.password1.errors %}
+                            <div class="text-danger small mt-1">{{ form.password1.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.password2.id_for_label }}" class="form-label">Şifrəni təstiqləyin *</label>
+                            {{ form.password2 }}
+                            {% if form.password2.errors %}
+                            <div class="text-danger small mt-1">{{ form.password2.errors }}</div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        {% if form.is_active %}
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Hesab statusu</label>
+                            <div class="form-check form-switch mt-2">
+                                {{ form.is_active }}
+                                <label class="form-check-label ms-2" for="{{ form.is_active.id_for_label }}">Aktiv hesab</label>
+                            </div>
+                            {% if form.is_active.errors %}
+                            <div class="text-danger small mt-1">{{ form.is_active.errors }}</div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex flex-column flex-sm-row gap-3 mt-5">
+                        <button type="submit" class="btn btn-primary flex-sm-grow-0 flex-sm-1 order-1 order-sm-2">
+                            <i class="bi bi-check-lg me-2"></i>Yadda saxla
+                        </button>
+                        <a href="{% if is_self_teacher %}{% url 'core:dashboard' %}{% else %}{% url 'core:teacher_list' %}{% endif %}" class="btn btn-outline-secondary flex-sm-grow-0 flex-sm-1 order-2 order-sm-1">
+                            <i class="bi bi-arrow-left me-2"></i>{% if is_self_teacher %}Ana səhifəyə qayıt{% else %}Siyahıya qayıt{% endif %}
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

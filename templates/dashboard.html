@@ -1,0 +1,376 @@
+{% extends base_template|default:"base.html" %}
+
+{% block title %}İdarə paneli | TəlimQeyd{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <nav aria-label="breadcrumb" class="mb-2">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Ana səhifə</a></li>
+            <li class="breadcrumb-item active" aria-current="page">İdarə paneli</li>
+        </ol>
+    </nav>
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
+        <div>
+            <h1>Salam, {{ current_user_display }}!</h1>
+            <p>Bu gün təlim prosesində baş verənlərlə tanış olun.</p>
+        </div>
+        {% if carousel_reklamlar %}
+        <div class="header-ad-widget" aria-label="Reklamlar">
+            <span class="header-ad-widget-icon" title="Reklamlar">
+                <i class="bi bi-megaphone-fill"></i>
+            </span>
+            <div class="header-ad-divider"></div>
+            {% for reklam in carousel_reklamlar %}
+            <a href="{% url 'core:reklam_detail' reklam.pk %}" class="header-ad-fragment" title="{{ reklam.ad }} {{ reklam.soyad }} - {{ reklam.ixtisas_fenni }}">
+                <img src="{{ reklam.sekil_url }}" alt="{{ reklam.ad }} {{ reklam.soyad }}" class="header-ad-avatar"
+                     onerror="this.src='https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=professional%20teacher%20portrait%20azerbaijan%20education&image_size=square'">
+                <div class="header-ad-info">
+                    <p class="header-ad-name">{{ reklam.ad }} {{ reklam.soyad }}</p>
+                    <span class="header-ad-ixtisas">{{ reklam.ixtisas_fenni }}</span>
+                </div>
+                <span class="header-ad-badge-pulse"></span>
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-3 g-sm-4 mb-4 mb-sm-5">
+    {% if is_student %}
+    <div class="col-12 col-sm-4">
+        <a href="{% url 'core:class_list' %}" class="stat-card-link stat-card card bg-success p-3 p-sm-4" aria-label="Siniflər səhifəsinə keç" title="Siniflər səhifəsinə keç">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label mb-2">Cəmi siniflər</div>
+                    <div class="stat-value">{{ total_classes }}</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-mortarboard-fill"></i></div>
+            </div>
+        </a>
+    </div>
+    <div class="col-12 col-sm-4">
+        <a href="{% url 'core:lesson_list' %}" class="stat-card-link stat-card card bg-warning p-3 p-sm-4" aria-label="Dərslər səhifəsinə keç" title="Dərslər səhifəsinə keç">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label mb-2">Cəmi dərslər</div>
+                    <div class="stat-value">{{ total_lessons }}</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-calendar2-check-fill"></i></div>
+            </div>
+        </a>
+    </div>
+    <div class="col-12 col-sm-4">
+        <a href="{% url 'core:reklam_list' %}" class="stat-card-link stat-card card bg-primary p-3 p-sm-4" aria-label="Reklamlar səhifəsinə keç" title="Reklamlar səhifəsinə keç">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label mb-2">Reklamlar</div>
+                    <div class="stat-value">{{ total_reklamlar }}</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-megaphone-fill"></i></div>
+            </div>
+        </a>
+    </div>
+    {% else %}
+    {% if is_admin %}
+    <div class="col-6 col-md-3">
+        <a href="{% url 'core:teacher_list' %}" class="stat-card-link stat-card card bg-info p-3 p-sm-4" aria-label="Müəllimlər səhifəsinə keç" title="Müəllimlər səhifəsinə keç">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label mb-2">Cəmi müəllimlər</div>
+                    <div class="stat-value">{{ total_teachers }}</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-person-badge-fill"></i></div>
+            </div>
+        </a>
+    </div>
+    {% endif %}
+    <div class="col-6 col-md-3">
+        <a href="{% url 'core:class_list' %}" class="stat-card-link stat-card card bg-success p-3 p-sm-4" aria-label="Siniflər səhifəsinə keç" title="Siniflər səhifəsinə keç">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label mb-2">Cəmi siniflər</div>
+                    <div class="stat-value">{{ total_classes }}</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-mortarboard-fill"></i></div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="{% url 'core:student_list' %}" class="stat-card-link stat-card card bg-warning p-3 p-sm-4" aria-label="Şagirdlər səhifəsinə keç" title="Şagirdlər səhifəsinə keç">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label mb-2">Cəmi şagirdlər</div>
+                    <div class="stat-value">{{ total_students }}</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="{% url 'core:lesson_list' %}" class="stat-card-link stat-card card bg-info p-3 p-sm-4" aria-label="Dərslər səhifəsinə keç" title="Dərslər səhifəsinə keç">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label mb-2">Cəmi dərslər</div>
+                    <div class="stat-value">{{ total_lessons }}</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-calendar2-check-fill"></i></div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="{% url 'core:reklam_list' %}" class="stat-card-link stat-card card bg-primary p-3 p-sm-4" aria-label="Reklamlar səhifəsinə keç" title="Reklamlar səhifəsinə keç">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label mb-2">Reklamlar</div>
+                    <div class="stat-value">{{ total_reklamlar }}</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-megaphone-fill"></i></div>
+            </div>
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+        <div class="card h-100 glass-card">
+            <div class="card-header bg-transparent border-bottom-0 d-flex align-items-center justify-content-between px-4 pt-4 pb-0">
+                <div>
+                    <h3 class="h5 fw-bold mb-0">{% if is_admin %}Bütün siniflər{% elif is_teacher %}Sizin sinifləriniz{% else %}Mənim siniflərim{% endif %}</h3>
+                    <p class="text-muted small mb-0">Siniflərin və şagird saylarının ümumi baxışı</p>
+                </div>
+                <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+                    {% if carousel_reklamlar %}
+                    <div class="header-ad-widget" aria-label="Reklamlar">
+                        <span class="header-ad-widget-icon" title="Reklamlar">
+                            <i class="bi bi-megaphone-fill"></i>
+                        </span>
+                        <div class="header-ad-divider"></div>
+                        {% for reklam in carousel_reklamlar %}
+                        <a href="{% url 'core:reklam_detail' reklam.pk %}" class="header-ad-fragment" title="{{ reklam.ad }} {{ reklam.soyad }} - {{ reklam.ixtisas_fenni }}">
+                            <img src="{{ reklam.sekil_url }}" alt="{{ reklam.ad }} {{ reklam.soyad }}" class="header-ad-avatar"
+                                 onerror="this.src='https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=professional%20teacher%20portrait%20azerbaijan%20education&image_size=square'">
+                            <div class="header-ad-info">
+                                <p class="header-ad-name">{{ reklam.ad }} {{ reklam.soyad }}</p>
+                                <span class="header-ad-ixtisas">{{ reklam.ixtisas_fenni }}</span>
+                            </div>
+                            <span class="header-ad-badge-pulse"></span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% if is_teacher %}
+                    <a href="{% url 'core:class_create' %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-lg me-1"></i><span class="d-none d-sm-inline">Yeni sinif</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body p-4">
+                {% if classes_with_counts %}
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Sinif adı</th>
+                                {% if is_admin %}<th>Müəllim</th>{% endif %}
+                                <th>Şagirdlər</th>
+                                <th class="d-none d-md-table-cell">Dərslər</th>
+                                <th>Əməllər</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cls in classes_with_counts %}
+                            <tr>
+                                <td data-label="Sinif">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="d-none d-sm-flex align-items-center justify-content-center rounded-3" style="width: 2.75rem; height: 2.75rem; background: rgba(79, 70, 229, 0.1);">
+                                             <i class="bi bi-mortarboard-fill" style="color: var(--primary);"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold">{{ cls.class_obj.name }}</div>
+                                            {% if not is_admin and not is_student %}<small class="text-muted">{{ cls.total_students }} şagird</small>{% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                {% if is_admin %}
+                                <td data-label="Müəllim">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="avatar" style="width: 2rem; height: 2rem; font-size: 0.75rem;">{{ cls.class_obj.teacher.get_full_name|default:cls.class_obj.teacher.username|slice:":1"|upper }}</span>
+                                        <div>
+                                            <div class="fw-medium">{{ cls.class_obj.teacher.get_full_name|default:cls.class_obj.teacher.username }}</div>
+                                            <small class="text-muted">{{ cls.class_obj.teacher.subject }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                {% endif %}
+                                <td data-label="Şagirdlər">
+                                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">
+                                        {{ cls.total_students }}
+                                    </span>
+                                </td>
+                                <td data-label="Dərslər" class="d-none d-md-table-cell">
+                                    <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-2">
+                                        {{ cls.class_obj.lessons.count }}
+                                    </span>
+                                </td>
+                                <td data-label="Əməllər">
+                                    <div class="d-flex gap-2 justify-content-start justify-content-md-end">
+                                        <a href="{% url 'core:class_detail' cls.class_obj.pk %}" class="btn btn-outline-primary btn-sm action-btn" data-bs-toggle="tooltip" title="Bax">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        {% if is_teacher %}
+                                        <a href="{% url 'core:class_update' cls.class_obj.pk %}" class="btn btn-outline-secondary btn-sm action-btn" data-bs-toggle="tooltip" title="Redaktə et">
+                                            <i class="bi bi-pencil-fill"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-4">
+                    <a href="{% url 'core:class_list' %}" class="btn btn-outline-primary btn-sm">
+                        Bütün siniflərə bax <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-mortarboard"></i>
+                    <h3>Hələ sinif yoxdur</h3>
+                    <p>{% if is_admin %}İlk sinifinizi yaradın və onu müəllimə təyin edin.{% elif is_teacher %}İnzibatçı tezliklə sinifləri sizə təyin edəcək.{% else %}Müəllim tezliklə sizi sinifə əlavə edəcək.{% endif %}</p>
+                    {% if is_teacher %}
+                    <a href="{% url 'core:class_create' %}" class="btn btn-primary mt-3">
+                        <i class="bi bi-plus-lg me-1"></i>İlk sinif əlavə et
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        {% if is_admin %}
+        <div class="card mb-4 glass-card">
+            <div class="card-header bg-transparent border-bottom-0 d-flex align-items-center justify-content-between px-4 pt-4 pb-0">
+                <div>
+                    <h3 class="h5 fw-bold mb-0">Son istifadəçilər</h3>
+                    <p class="text-muted small mb-0">Son qeydiyyatdan keçmiş istifadəçilər</p>
+                </div>
+                <a href="{% url 'core:teacher_list' %}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-people me-1"></i><span class="d-none d-sm-inline">Hamısı</span>
+                </a>
+            </div>
+            <div class="card-body p-4">
+                {% if recent_users %}
+                <div class="list-group list-group-flush">
+                    {% for u in recent_users %}
+                    <div class="list-group-item px-0 py-3 d-flex align-items-center gap-3 border-0">
+                        <span class="avatar">{{ u.get_full_name|default:u.username|slice:":1"|upper }}</span>
+                        <div class="flex-grow-1 min-w-0">
+                            <div class="fw-semibold text-truncate">{{ u.get_full_name|default:u.username }}</div>
+                            <small class="text-muted">
+                                {% if u.is_teacher %}{{ u.subject }}{% else %}{{ u.email }}{% endif %}
+                            </small>
+                        </div>
+                        {% if u.is_teacher %}
+                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2 py-1 small">Müəllim</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state py-4">
+                    <i class="bi bi-person-x" style="font-size: 3rem;"></i>
+                    <h3 class="fs-5 mt-2 mb-1">Hələ istifadəçi yoxdur</h3>
+                    {% if is_course_admin %}
+                    <p class="small">
+                        Müəllim hesabları yaratmaqla başlayın.
+                        <br><span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-1 mt-1 d-inline-block">
+                            <i class="bi bi-stopwatch me-1"></i>Qalan limit: <strong>{{ teacher_creation_limit }}</strong>
+                        </span>
+                    </p>
+                    {% if teacher_creation_limit > 0 %}
+                    <a href="{% url 'core:teacher_create' %}" class="btn btn-primary btn-sm mt-2">
+                        <i class="bi bi-plus-lg me-1"></i>Müəllim əlavə et
+                    </a>
+                    {% else %}
+                    <button type="button" class="btn btn-secondary btn-sm mt-2" disabled data-bs-toggle="tooltip" title="Siz artıq müəllim yaratmaq limitinə çatmısınız. Limiti artırmaq üçün xahiş edirik inzibatçı ilə əlaqə saxlayın.">
+                        <i class="bi bi-lock-fill me-1"></i>Limit doludur
+                    </button>
+                    {% endif %}
+                    {% else %}
+                    <p class="small">Müəllim hesabları yaratmaqla başlayın.</p>
+                    <a href="{% url 'core:teacher_create' %}" class="btn btn-primary btn-sm mt-2">
+                        <i class="bi bi-plus-lg me-1"></i>Müəllim əlavə et
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="card glass-card">
+            <div class="card-header bg-transparent border-bottom-0 px-4 pt-4 pb-0">
+                <h3 class="h5 fw-bold mb-0">Sürətli əməllər</h3>
+                <p class="text-muted small mb-0">Dərhal həyata keçirin</p>
+            </div>
+            <div class="card-body p-4">
+                <div class="d-grid gap-3">
+                    {% if is_teacher %}
+                    <a href="{% url 'core:lesson_create' %}" class="btn btn-primary d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-calendar-plus-fill"></i>
+                        <span>Yeni dərs əlavə et</span>
+                    </a>
+                    <a href="{% url 'core:class_create' %}" class="btn btn-outline-primary d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-plus-circle-fill"></i>
+                        <span>Yeni sinif yarat</span>
+                    </a>
+                    <a href="{% url 'core:new_student_create' %}" class="btn btn-outline-primary d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-person-plus-fill"></i>
+                        <span>Yeni şagird əlavə et</span>
+                    </a>
+                    <a href="{% url 'core:teacher_update' request.user.pk %}" class="btn btn-outline-secondary d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-pencil-square"></i>
+                        <span>Profili redaktə et</span>
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'core:reklam_list' %}" class="btn btn-outline-primary d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-megaphone-fill"></i>
+                        <span>Reklamlara bax</span>
+                    </a>
+                    {% if is_course_admin %}
+                    {% if teacher_creation_limit > 0 %}
+                    <a href="{% url 'core:teacher_create' %}" class="btn btn-primary d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-person-plus-fill"></i>
+                        <span>Müəllim əlavə et</span>
+                        <span class="badge bg-white text-primary rounded-pill px-2 py-1 small">{{ teacher_creation_limit }}</span>
+                    </a>
+                    {% else %}
+                    <button type="button" class="btn btn-secondary d-flex align-items-center justify-content-center gap-2" disabled data-bs-toggle="tooltip" title="Siz artıq müəllim yaratmaq limitinə çatmısınız. Limiti artırmaq üçün xahiş edirik inzibatçı ilə əlaqə saxlayın.">
+                        <i class="bi bi-lock-fill"></i>
+                        <span>Müəllim limiti doludur</span>
+                    </button>
+                    {% endif %}
+                    {% elif is_admin %}
+                    <a href="{% url 'core:teacher_create' %}" class="btn btn-outline-secondary d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-person-badge-fill"></i>
+                        <span>Müəllim qeydiyyatı</span>
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'core:lesson_list' %}" class="btn btn-outline-dark d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-list-ul"></i>
+                        <span>Bütün dərslərə bax</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

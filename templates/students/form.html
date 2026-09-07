@@ -1,0 +1,140 @@
+{% extends base_template|default:"base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ action }} Şagird | TəlimQeyd{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <nav aria-label="breadcrumb" class="mb-2">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Ana səhifə</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'core:student_list' %}">Şagirdlər</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ action }}</li>
+        </ol>
+    </nav>
+    <h1>{{ action }} Şagird</h1>
+    <p>{% if action == 'Əlavə et' %}Yeni şagirdi sinifə qeydiyyatdan keçirin.{% else %}Şagird məlumatlarını yeniləyin.{% endif %}</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10 col-xl-8">
+        {% if form.firstname and student %}
+        <div class="card mb-4">
+            <div class="card-header bg-white border-bottom px-4 py-3">
+                <h3 class="h5 fw-bold mb-0">
+                    <i class="bi bi-key-fill me-2" style="color: var(--primary);"></i>
+                    Giriş Məlumatları
+                </h3>
+            </div>
+            <div class="card-body px-4 py-3">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <div class="small text-muted mb-1">İstifadəçi adı</div>
+                        <div class="fw-semibold">{{ student.username }}</div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="small text-muted mb-1">Şifrə</div>
+                        <div class="fw-semibold">{{ student.password }}</div>
+                    </div>
+                    {% if student.classes.all %}
+                    <div class="col-12">
+                        <div class="small text-muted mb-2">Qeydiyyat olduğu siniflər</div>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for cls in student.classes.all %}
+                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">
+                                <i class="bi bi-mortarboard me-1"></i>{{ cls.name }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <div class="card-header bg-white border-bottom px-4 py-3">
+                <h3 class="h5 fw-bold mb-0">
+                    <i class="bi bi-person-fill me-2" style="color: var(--primary);"></i>
+                    Şagird Məlumatları
+                </h3>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        {% if form.firstname %}
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.firstname.id_for_label }}" class="form-label">Ad *</label>
+                            {{ form.firstname }}
+                            {% if form.firstname.errors %}
+                            <div class="text-danger small mt-1">{{ form.firstname.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">Şagirdin adını daxil edin.</div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.lastname.id_for_label }}" class="form-label">Soyad *</label>
+                            {{ form.lastname }}
+                            {% if form.lastname.errors %}
+                            <div class="text-danger small mt-1">{{ form.lastname.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">Şagirdin soyadını daxil edin.</div>
+                        </div>
+                        {% if form.attendance_grades %}
+                        <div class="col-12 col-md-6">
+                            <label for="{{ form.attendance_grades.id_for_label }}" class="form-label">Davamiyyət Qiyməti (0-10)</label>
+                            {{ form.attendance_grades }}
+                            {% if form.attendance_grades.errors %}
+                            <div class="text-danger small mt-1">{{ form.attendance_grades.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">0 ilə 10 arasında qiymət daxil edin.</div>
+                        </div>
+                        {% endif %}
+                        <div class="col-12 {% if form.attendance_grades %}col-md-6{% else %}col-md-12{% endif %}">
+                            <div class="form-check mt-2 pt-{% if form.attendance_grades %}4{% else %}0{% endif %}">
+                                {{ form.activity_status }}
+                                <label class="form-check-label" for="{{ form.activity_status.id_for_label }}">
+                                    Aktiv hesab
+                                </label>
+                            </div>
+                            {% if form.activity_status.errors %}
+                            <div class="text-danger small mt-1">{{ form.activity_status.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">Bu şagirdin hesabı aktivdirsə, giriş edə biləcək.</div>
+                        </div>
+                        {% elif form.full_name %}
+                        <div class="col-12 col-md-12">
+                            <label for="{{ form.full_name.id_for_label }}" class="form-label">Tam adı *</label>
+                            {{ form.full_name }}
+                            {% if form.full_name.errors %}
+                            <div class="text-danger small mt-1">{{ form.full_name.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">Şagirdin tam hüquqi adını daxil edin.</div>
+                        </div>
+                        <div class="col-12 col-md-12">
+                            <label for="{{ form.current_class.id_for_label }}" class="form-label">Cari sinif *</label>
+                            {{ form.current_class }}
+                            {% if form.current_class.errors %}
+                            <div class="text-danger small mt-1">{{ form.current_class.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">{% if is_admin %}Şagirdin qeydiyyatdan keçəcəyi sinifi seçin.{% else %}Yalnız sizə təyin olunmuş siniflər mövcuddur.{% endif %}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex flex-column flex-sm-row gap-3 mt-5">
+                        {% if is_teacher %}
+                        <button type="submit" class="btn btn-primary flex-sm-grow-0 flex-sm-1 order-1 order-sm-2">
+                            <i class="bi bi-check-lg me-2"></i>Yadda saxla
+                        </button>
+                        {% endif %}
+                        <a href="{% url 'core:student_list' %}" class="btn btn-outline-secondary flex-sm-grow-0 flex-sm-1 order-2 order-sm-1">
+                            <i class="bi bi-arrow-left me-2"></i>Siyahıya qayıt
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

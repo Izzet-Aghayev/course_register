@@ -1,0 +1,191 @@
+{% extends base_template|default:"base.html" %}
+
+{% block title %}Siniflər | TəlimQeyd{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <nav aria-label="breadcrumb" class="mb-2">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Ana səhifə</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Siniflər</li>
+        </ol>
+    </nav>
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
+        <div>
+            <h1>Siniflər</h1>
+            <p>{% if is_admin %}Bütün sinifləri və təyin olunmuş müəllimləri idarə edin.{% elif is_teacher %}Sizə təyin olunmuş sinifləri idarə edin.{% else %}Qeydiyyatdan keçdiyiniz sinifləri baxın.{% endif %}</p>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+            {% if carousel_reklamlar %}
+            <div class="header-ad-widget" aria-label="Reklamlar">
+                <span class="header-ad-widget-icon" title="Reklamlar">
+                    <i class="bi bi-megaphone-fill"></i>
+                </span>
+                <div class="header-ad-divider"></div>
+                {% for reklam in carousel_reklamlar %}
+                <a href="{% url 'core:reklam_detail' reklam.pk %}" class="header-ad-fragment" title="{{ reklam.ad }} {{ reklam.soyad }} - {{ reklam.ixtisas_fenni }}">
+                    <img src="{{ reklam.sekil_url }}" alt="{{ reklam.ad }} {{ reklam.soyad }}" class="header-ad-avatar"
+                         onerror="this.src='https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=professional%20teacher%20portrait%20azerbaijan%20education&image_size=square'">
+                    <div class="header-ad-info">
+                        <p class="header-ad-name">{{ reklam.ad }} {{ reklam.soyad }}</p>
+                        <span class="header-ad-ixtisas">{{ reklam.ixtisas_fenni }}</span>
+                    </div>
+                    <span class="header-ad-badge-pulse"></span>
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% if is_teacher %}
+            <a href="{% url 'core:class_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-2"></i>Yeni sinif
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-3 p-sm-4">
+        <form method="get" class="mb-4">
+            <div class="d-flex flex-column flex-sm-row gap-3">
+                <div class="search-box flex-grow-1">
+                    <i class="bi bi-search"></i>
+                    <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Sinifləri ad və ya müəllim üzrə axtarın...">
+                </div>
+                <button type="submit" class="btn btn-outline-secondary w-100 w-sm-auto">Axtar</button>
+                {% if query %}
+                <a href="{% url 'core:class_list' %}" class="btn btn-link text-decoration-none w-100 w-sm-auto">Təmizlə</a>
+                {% endif %}
+            </div>
+        </form>
+
+        {% if classes %}
+        <div class="row g-4">
+            {% for cls in classes %}
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-3">
+                <div class="card h-100 class-card">
+                    <div class="card-body p-4 d-flex flex-column">
+                        <div class="d-flex align-items-start justify-content-between mb-3">
+                            <div class="d-flex align-items-center justify-content-center rounded-3" style="width: 3rem; height: 3rem; background: rgba(79, 70, 229, 0.1);">
+                                <i class="bi bi-mortarboard-fill fs-4" style="color: var(--primary);"></i>
+                            </div>
+                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">
+                                {{ cls.total_students }} <i class="bi bi-people ms-1"></i>
+                            </span>
+                        </div>
+                        <h3 class="h5 fw-bold mb-1">{{ cls.name }}</h3>
+                        {% if is_admin %}
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <span class="avatar" style="width: 1.75rem; height: 1.75rem; font-size: 0.7rem;">{{ cls.teacher.get_full_name|default:cls.teacher.username|slice:":1"|upper }}</span>
+                            <div>
+                                <div class="small fw-medium">{{ cls.teacher.get_full_name|default:cls.teacher.username }}</div>
+                                <small class="text-muted">{{ cls.teacher.subject }}</small>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="mt-auto">
+                            <div class="mb-3">
+                                <div class="small text-muted mb-2">Şagird sayı</div>
+                                <div class="participant-bar">
+                                    <div class="participant-bar-fill" style="width: {% widthratio cls.total_students 50 100 %}%;"></div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'core:class_detail' cls.pk %}" class="btn btn-outline-primary btn-sm flex-grow-1">
+                                    <i class="bi bi-eye me-1"></i> Bax
+                                </a>
+                                {% if is_teacher %}
+                                <a href="{% url 'core:class_update' cls.pk %}" class="btn btn-outline-secondary btn-sm action-btn" data-bs-toggle="tooltip" title="Redaktə et">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </a>
+                                <a href="{% url 'core:class_delete' cls.pk %}" class="btn btn-outline-danger btn-sm action-btn" data-bs-toggle="tooltip" title="Sil">
+                                    <i class="bi bi-trash-fill"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Səhifə naviqasiyası" class="mt-4">
+            <ul class="pagination justify-content-center flex-wrap mb-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page=1" aria-label="Birinci">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}" aria-label="Əvvəlki">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link" aria-label="Birinci"><i class="bi bi-chevron-double-left"></i></span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link" aria-label="Əvvəlki"><i class="bi bi-chevron-left"></i></span>
+                </li>
+                {% endif %}
+
+                {% for i in page_obj.paginator.page_range %}
+                    {% if page_obj.number == i %}
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link">{{ i }}</span>
+                    </li>
+                    {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ i }}">{{ i }}</a>
+                    </li>
+                    {% elif i == 1 or i == page_obj.paginator.num_pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ i }}">{{ i }}</a>
+                    </li>
+                    {% elif i == page_obj.number|add:'-3' or i == page_obj.number|add:'3' %}
+                    <li class="page-item disabled">
+                        <span class="page-link">…</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}" aria-label="Növbəti">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.paginator.num_pages }}" aria-label="Sonuncu">
+                        <i class="bi bi-chevron-double-right"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link" aria-label="Növbəti"><i class="bi bi-chevron-right"></i></span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link" aria-label="Sonuncu"><i class="bi bi-chevron-double-right"></i></span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-mortarboard"></i>
+            <h3>Sinif tapılmadı</h3>
+            <p>{% if query %}Axtarışınızı dəyişdirməyə cəhd edin.{% else %}İlk sinifinizi yaratmaqla başlayın.{% endif %}</p>
+            {% if is_teacher %}
+            <a href="{% url 'core:class_create' %}" class="btn btn-primary mt-3">
+                <i class="bi bi-plus-lg me-1"></i>İlk sinif yarat
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

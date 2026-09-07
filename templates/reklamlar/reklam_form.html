@@ -1,0 +1,49 @@
+{% extends base_template|default:"base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}{{ action }} - Reklam - TəlimQeyd{% endblock %}
+{% block content %}
+<div class="page-header">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">İdarə paneli</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'core:reklam_list' %}">Reklamlar</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ action }}</li>
+        </ol>
+    </nav>
+    <h1 class="mt-3"><i class="bi bi-megaphone-fill me-2" style="color: var(--primary);"></i>{{ action }}</h1>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10 col-xl-8">
+        <div class="card glass-card shadow-3d">
+            <div class="card-body p-4 p-md-5">
+                {% if reklam and reklam.sekil %}
+                <div class="mb-4 d-flex align-items-center gap-3">
+                    <img src="{{ reklam.sekil_url }}" alt="{{ reklam.ad }} {{ reklam.soyad }}"
+                         class="rounded-circle shadow-3d" style="width: 72px; height: 72px; object-fit: cover;">
+                    <div>
+                        <div class="fw-bold">Mövcud şəkil</div>
+                        <small class="text-muted">Yeni şəkil yükləsəniz, mövcud şəkil əvəz olunacaq.</small>
+                    </div>
+                </div>
+                {% endif %}
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    {% crispy form %}
+                    <div class="d-flex flex-column flex-sm-row gap-3 mt-4">
+                        <a href="{% if reklam %}{% url 'core:reklam_detail' reklam.pk %}{% else %}{% url 'core:reklam_list' %}{% endif %}"
+                           class="btn btn-outline-secondary flex-grow-1 d-flex align-items-center justify-content-center gap-2">
+                            <i class="bi bi-x-lg"></i><span>Ləğv et</span>
+                        </a>
+                        {% if is_teacher %}
+                        <button type="submit" class="btn btn-primary flex-grow-1 d-flex align-items-center justify-content-center gap-2">
+                            <i class="bi bi-check2-circle"></i><span>Yadda saxla</span>
+                        </button>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

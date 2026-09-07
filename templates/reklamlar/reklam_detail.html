@@ -1,0 +1,217 @@
+{% extends base_template|default:"base.html" %}
+{% block title %}{{ reklam.ad }} {{ reklam.soyad }} - Reklam ətraflı - TəlimQeyd{% endblock %}
+{% block content %}
+<div class="page-header">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            {% if is_teacher or is_student %}
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">İdarə paneli</a></li>
+            {% else %}
+            <li class="breadcrumb-item"><a href="{% url 'core:landing_page' %}">Ana səhifə</a></li>
+            {% endif %}
+            <li class="breadcrumb-item"><a href="{% url 'core:reklam_list' %}">Reklamlar</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ reklam.ad }} {{ reklam.soyad }}</li>
+        </ol>
+    </nav>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mt-3">
+        <h1><i class="bi bi-person-vcard-fill me-2" style="color: var(--primary);"></i>Reklam ətraflı</h1>
+        {% if is_owner or is_admin %}
+        <div class="d-flex gap-2">
+            <a href="{% url 'core:reklam_update' reklam.pk %}" class="btn btn-outline-primary d-flex align-items-center gap-2">
+                <i class="bi bi-pencil-square"></i><span>Redaktə et</span>
+            </a>
+            <a href="{% url 'core:reklam_delete' reklam.pk %}" class="btn btn-outline-danger d-flex align-items-center gap-2">
+                <i class="bi bi-trash3"></i><span>Sil</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4 align-items-start">
+    <div class="col-12 col-lg-4">
+        <div class="card glass-card shadow-3d">
+            <div class="card-body text-center p-4">
+                <div class="reklam-detail-image-wrapper mb-3">
+                    <img src="{{ reklam.sekil_url }}" alt="{% if reklam.owner.get_full_name %}{{ reklam.owner.get_full_name }}{% else %}{{ reklam.ad }} {{ reklam.soyad }}{% endif %}"
+                         class="reklam-detail-image img-fluid rounded-circle shadow-3d"
+                         onerror="this.src='https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=professional%20teacher%20portrait%20azerbaijan%20education&image_size=square'">
+                </div>
+                {% if reklam.owner.get_full_name %}
+                <h3 class="mb-1 fw-bold">{{ reklam.owner.get_full_name }}</h3>
+                {% else %}
+                <h3 class="mb-1 fw-bold">{{ reklam.ad }} {{ reklam.soyad }}</h3>
+                {% endif %}
+                <div class="detail-specialty-badge mb-3">
+                    {{ reklam.owner.subject|default:reklam.ixtisas_fenni }}
+                </div>
+                <div class="d-grid gap-2 mt-3">
+                    <div class="detail-info-item text-start">
+                        <div class="detail-info-icon"><i class="bi bi-person-badge"></i></div>
+                        <div class="flex-grow-1">
+                            <div class="detail-info-label">Sahib</div>
+                            <div class="detail-info-value">{{ reklam.owner.get_full_name|default:reklam.owner.username }}</div>
+                        </div>
+                    </div>
+                    {% if reklam.telefon_nomresi %}
+                    <div class="detail-info-item text-start">
+                        <div class="detail-info-icon"><i class="bi bi-telephone-fill"></i></div>
+                        <div class="flex-grow-1">
+                            <div class="detail-info-label">Telefon nömrəsi</div>
+                            <div class="detail-info-value">{{ reklam.telefon_nomresi }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="detail-info-item text-start">
+                        <div class="detail-info-icon"><i class="bi bi-calendar-plus-fill"></i></div>
+                        <div class="flex-grow-1">
+                            <div class="detail-info-label">Yaradılma tarixi</div>
+                            <div class="detail-info-value">{{ reklam.yaradilma_tarixi|date:"d.m.Y H:i" }}</div>
+                        </div>
+                    </div>
+                    <div class="detail-info-item text-start">
+                        <div class="detail-info-icon"><i class="bi bi-arrow-clockwise"></i></div>
+                        <div class="flex-grow-1">
+                            <div class="detail-info-label">Yenilənmə tarixi</div>
+                            <div class="detail-info-value">{{ reklam.yenilenme_tarixi|date:"d.m.Y H:i" }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-8">
+        <div class="card glass-card shadow-3d reklam-about-card">
+            <div class="card-header d-flex align-items-center gap-2 border-0 pt-3 px-4 pb-1 bg-transparent">
+                <i class="bi bi-file-earmark-text-fill fs-5" style="color: var(--primary);"></i>
+                <h4 class="mb-0 fw-bold fs-5">Haqqında məlumat</h4>
+            </div>
+            <div class="card-body px-4 py-2">
+                {% if reklam.haqqinda_melumat %}
+                <div class="prose-section">
+                    <p class="mb-0 lh-lg" style="white-space: pre-wrap; height: auto;">{{ reklam.haqqinda_melumat }}</p>
+                </div>
+                {% else %}
+                <div class="empty-state py-3">
+                    <i class="bi bi-file-earmark-text"></i>
+                    <h3>Haqqında məlumat əlavə edilməmişdir</h3>
+                    <p>Bu reklam üçün təfərrüatlı məlumat hələ daxil edilməmişdir.</p>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-transparent border-0 px-4 pb-3 pt-2">
+                <a href="{% url 'core:reklam_list' %}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+                    <i class="bi bi-arrow-left"></i><span>Reklamlar siyahısına qayıt</span>
+                </a>
+            </div>
+        </div>
+
+        {% if related_ads %}
+        {% with related_ads|slice:":4" as upper_ads %}
+        {% if upper_ads %}
+        <div class="related-ads-section mt-4">
+            <div class="related-ads-section-header">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-magic fs-5" style="color: var(--accent);"></i>
+                    <h4 class="mb-0 fw-bold fs-5">
+                        {% if related_ads_specialty_match %}
+                        Oxşar ixtisaslı reklamlar və digərları
+                        {% else %}
+                        Ən son reklamlar
+                        {% endif %}
+                    </h4>
+                    {% if related_ads_specialty_match %}
+                    <span class="badge bg-accent bg-opacity-15 rounded-pill px-2 py-1 small" style="color: var(--accent);">
+                        <i class="bi bi-mortarboard-fill me-1"></i>{{ related_ads_specialty_count }} uyğun
+                    </span>
+                    {% endif %}
+                </div>
+                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2 small">
+                    <i class="bi bi-collection me-1"></i>{{ related_ads|length }} reklam
+                </span>
+            </div>
+            <div class="related-ads-flow related-ads-flow-upper">
+                {% for rel in upper_ads %}
+                <a href="{% url 'core:reklam_detail' rel.pk %}" class="related-ad-wrap text-decoration-none">
+                    <div class="related-ad-card">
+                        <div class="related-ad-body">
+                            <div class="related-ad-top-row">
+                                <img src="{{ rel.sekil_url }}" alt="{% if rel.owner.get_full_name %}{{ rel.owner.get_full_name }}{% else %}{{ rel.ad }} {{ rel.soyad }}{% endif %}"
+                                     class="related-ad-portrait"
+                                     onerror="this.src='https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=professional%20teacher%20portrait%20azerbaijan%20education&image_size=square'">
+                                <div class="related-ad-identity">
+                                    {% if rel.owner.get_full_name %}
+                                    <h5 class="related-ad-fullname">{{ rel.owner.get_full_name }}</h5>
+                                    {% else %}
+                                    <h5 class="related-ad-fullname">{{ rel.ad }} {{ rel.soyad }}</h5>
+                                    {% endif %}
+                                    <div class="related-ad-specialty-pill">
+                                        {{ rel.owner.subject|default:rel.ixtisas_fenni }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="related-ad-meta-row">
+                                <div class="related-ad-date">
+                                    <i class="bi bi-calendar3"></i>
+                                    <span>{{ rel.yaradilma_tarixi|date:"d.m.Y" }}</span>
+                                </div>
+                                <div class="related-ad-arrow">
+                                    <i class="bi bi-arrow-right-short"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        {% endwith %}
+        {% endif %}
+    </div>
+</div>
+
+{% if related_ads %}
+{% with related_ads|slice:"4:" as lower_ads %}
+{% if lower_ads %}
+<div class="related-ads-section mt-4">
+    <div class="related-ads-flow related-ads-flow-lower">
+        {% for rel in lower_ads %}
+        <a href="{% url 'core:reklam_detail' rel.pk %}" class="related-ad-wrap text-decoration-none">
+            <div class="related-ad-card">
+                <div class="related-ad-body">
+                    <div class="related-ad-top-row">
+                        <img src="{{ rel.sekil_url }}" alt="{% if rel.owner.get_full_name %}{{ rel.owner.get_full_name }}{% else %}{{ rel.ad }} {{ rel.soyad }}{% endif %}"
+                             class="related-ad-portrait"
+                             onerror="this.src='https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=professional%20teacher%20portrait%20azerbaijan%20education&image_size=square'">
+                        <div class="related-ad-identity">
+                            {% if rel.owner.get_full_name %}
+                            <h5 class="related-ad-fullname">{{ rel.owner.get_full_name }}</h5>
+                            {% else %}
+                            <h5 class="related-ad-fullname">{{ rel.ad }} {{ rel.soyad }}</h5>
+                            {% endif %}
+                            <div class="related-ad-specialty-pill">
+                                {{ rel.owner.subject|default:rel.ixtisas_fenni }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="related-ad-meta-row">
+                        <div class="related-ad-date">
+                            <i class="bi bi-calendar3"></i>
+                            <span>{{ rel.yaradilma_tarixi|date:"d.m.Y" }}</span>
+                        </div>
+                        <div class="related-ad-arrow">
+                            <i class="bi bi-arrow-right-short"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endwith %}
+{% endif %}
+{% endblock %}
