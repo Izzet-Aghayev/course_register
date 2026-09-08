@@ -91,12 +91,11 @@ DATABASES = {
 # and notification de-duplication consistently when multiple workers run.
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': str(BASE_DIR / '.django_cache'),
-        'TIMEOUT': 300,
-        'OPTIONS': {'MAX_ENTRIES': 10000},
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
     }
 }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
