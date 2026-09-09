@@ -22,13 +22,14 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Miqrasiyanı Aiven bazasında birbaşa icra et
+    - name: Miqrasiyani Aiven bazasinda birbasa icra et
       env:
-        DB_NAME: defaultdb
-        DB_USER: avnadmin
-        DB_PASSWORD: sizin_aiven_gizli_sifreniz
-        DB_HOST: ://aivencloud.com
-        DB_PORT: 26233
+        DB_NAME: 'defaultdb'
+        DB_USER: 'avnadmin'
+        DB_PASSWORD: 'sizin_aiven_gizli_sifreniz'
+        DB_HOST: 'mysql-379baf1d-course-register-project.h.aivencloud.com'
+        DB_PORT: '26233'
       run: |
-        python manage.py migrate
-        python manage.py seed_data
+        python -c "import pymysql; pymysql.install_as_MySQLdb()"
+        python manage.py migrate --noinput
+        python manage.py seed_data --noinput
