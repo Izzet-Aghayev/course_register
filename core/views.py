@@ -1365,20 +1365,55 @@ def lesson_list(request):
     return render(request, 'lessons/list.html', context)
 
 
+# @teacher_or_admin_required
+# @transaction.atomic
+# def lesson_create(request):
+#     user = request.user
+#     if request.method == 'POST':
+#         form = LessonForm(request.POST, user=user)
+#         if form.is_valid():
+#             with transaction.atomic():
+#                 lesson = form.save(commit=False)
+#                 lesson.created_by = user
+#                 lesson.save()
+#                 class_obj = lesson.class_assigned
+#                 enrolled_students = list(
+#                     Student.objects.filter(classes=class_obj)
+#                 )
+#                 for stu in enrolled_students:
+#                     Attendance.objects.get_or_create(
+#                         lesson=lesson,
+#                         student=stu,
+#                         defaults={
+#                             'status': '',
+#                             'updated_by': user,
+#                         }
+#                     )
+#             messages.success(request, f'Dərs "{lesson.title_topic}" uğurla yaradıldı!')
+#             return redirect('core:lesson_attendance', lesson.pk)
+#     else:
+#         form = LessonForm(user=user)
+#     context = build_common_context(request, {'form': form, 'action': 'Əlavə et'})
+#     return render(request, 'lessons/form.html', context)
+
 @teacher_or_admin_required
 def lesson_create(request):
     user = request.user
     if request.method == 'POST':
         form = LessonForm(request.POST, user=user)
-        if form.is_valid():
-            with transaction.atomic():
+        
+        # 🚀 XƏTANI HƏLL EDƏN HİSSƏ: Tranzaksiyanı form yoxlanışından ƏVVƏL başladırıq
+        with transaction.atomic():
+            if form.is_valid():
                 lesson = form.save(commit=False)
                 lesson.created_by = user
                 lesson.save()
+                
                 class_obj = lesson.class_assigned
                 enrolled_students = list(
                     Student.objects.filter(classes=class_obj)
                 )
+                
                 for stu in enrolled_students:
                     Attendance.objects.get_or_create(
                         lesson=lesson,
@@ -1388,12 +1423,15 @@ def lesson_create(request):
                             'updated_by': user,
                         }
                     )
-            messages.success(request, f'Dərs "{lesson.title_topic}" uğurla yaradıldı!')
-            return redirect('core:lesson_attendance', lesson.pk)
+                
+                messages.success(request, f'Dərs "{lesson.title_topic}" uğurla yaradıldı!')
+                return redirect('core:lesson_attendance', lesson.pk)
     else:
         form = LessonForm(user=user)
+        
     context = build_common_context(request, {'form': form, 'action': 'Əlavə et'})
     return render(request, 'lessons/form.html', context)
+
 
 
 @teacher_or_admin_required
